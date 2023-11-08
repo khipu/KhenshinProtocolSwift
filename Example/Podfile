@@ -1,0 +1,13 @@
+use_frameworks!
+
+platform :ios, '10.0'
+
+target 'KhenshinProtocol_Example' do
+  pod 'KhenshinProtocol', :path => '../'
+
+  target 'KhenshinProtocol_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
