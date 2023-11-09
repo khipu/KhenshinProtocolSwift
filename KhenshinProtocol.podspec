@@ -19,6 +19,7 @@ This is a utility pod that provides the Swift bindings for the khenshin websocke
   s.source           = { :git => 'https://github.com/khipu/KhenshinProtocolSwift.git', :tag => s.version.to_s }
 
   s.ios.deployment_target = '12.0'
+  s.swift_version = '5.0'
 
   s.source_files = 'KhenshinProtocol/Classes/**/*'
 end
