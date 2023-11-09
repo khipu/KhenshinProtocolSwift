@@ -1,15 +1,7 @@
-#
-# Be sure to run `pod lib lint KhenshinProtocol.podspec' to ensure this is a
-# valid spec before submitting.
-#
-# Any lines starting with a # are optional, but their use is encouraged
-# To learn more about a Podspec see https://guides.cocoapods.org/syntax/podspec.html
-#
-
 Pod::Spec.new do |s|
   s.name             = 'KhenshinProtocol'
   s.version          = '0.1.0'
-  s.summary          = 'A short description of KhenshinProtocol.'
+  s.summary          = 'Small utility pod to use the khenshin websocket protocol'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -18,25 +10,15 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-TODO: Add long description of the pod here.
+This is a utility pod that provides the Swift bindings for the khenshin websocket protocol
                        DESC
 
-  s.homepage         = 'https://github.com/Emilio Davis/KhenshinProtocol'
-  # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
+  s.homepage         = 'https://github.com/khipu/KhenshinProtocolSwift'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Emilio Davis' => 'emilio.davis@khipu.com' }
-  s.source           = { :git => 'https://github.com/Emilio Davis/KhenshinProtocol.git', :tag => s.version.to_s }
-  # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
+  s.source           = { :git => 'https://github.com/khipu/KhenshinProtocolSwift.git', :tag => s.version.to_s }
 
-  s.ios.deployment_target = '10.0'
+  s.ios.deployment_target = '12.0'
 
   s.source_files = 'KhenshinProtocol/Classes/**/*'
-  
-  # s.resource_bundles = {
-  #   'KhenshinProtocol' => ['KhenshinProtocol/Assets/*.png']
-  # }
-
-  # s.public_header_files = 'Pod/Classes/**/*.h'
-  # s.frameworks = 'UIKit', 'MapKit'
-  # s.dependency 'AFNetworking', '~> 2.3'
 end
