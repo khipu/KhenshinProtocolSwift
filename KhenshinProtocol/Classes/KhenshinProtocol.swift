@@ -8,6 +8,7 @@
 //   let formResponse = try FormResponse(json)
 //   let messageType = try? JSONDecoder().decode(MessageType.self, from: jsonData)
 //   let openAuthorizationApp = try OpenAuthorizationApp(json)
+//   let operationDescriptorInfo = try OperationDescriptorInfo(json)
 //   let operationFailure = try OperationFailure(json)
 //   let operationFinish = try OperationFinish(json)
 //   let operationInfo = try OperationInfo(json)
@@ -93,6 +94,7 @@ public enum MessageType: String, Codable {
     case formRequest = "FORM_REQUEST"
     case formResponse = "FORM_RESPONSE"
     case openAuthorizationApp = "OPEN_AUTHORIZATION_APP"
+    case operationDescriptorInfo = "OPERATION_DESCRIPTOR_INFO"
     case operationFailure = "OPERATION_FAILURE"
     case operationInfo = "OPERATION_INFO"
     case operationRequest = "OPERATION_REQUEST"
@@ -1066,6 +1068,67 @@ public extension OpenAuthorizationApp {
     ) -> OpenAuthorizationApp {
         return OpenAuthorizationApp(
             data: data ?? self.data,
+            type: type ?? self.type
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - OperationDescriptorInfo
+public struct OperationDescriptorInfo: Codable {
+    public let data: [String: String]
+    public let operationID, operationType: String
+    public let type: MessageType
+
+    enum CodingKeys: String, CodingKey {
+        case data
+        case operationID = "operationId"
+        case operationType, type
+    }
+
+    public init(data: [String: String], operationID: String, operationType: String, type: MessageType) {
+        self.data = data
+        self.operationID = operationID
+        self.operationType = operationType
+        self.type = type
+    }
+}
+
+// MARK: OperationDescriptorInfo convenience initializers and mutators
+
+public extension OperationDescriptorInfo {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(OperationDescriptorInfo.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        data: [String: String]? = nil,
+        operationID: String? = nil,
+        operationType: String? = nil,
+        type: MessageType? = nil
+    ) -> OperationDescriptorInfo {
+        return OperationDescriptorInfo(
+            data: data ?? self.data,
+            operationID: operationID ?? self.operationID,
+            operationType: operationType ?? self.operationType,
             type: type ?? self.type
         )
     }
