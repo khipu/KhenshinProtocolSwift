@@ -22,6 +22,7 @@
 //   let siteInfo = try SiteInfo(json)
 //   let siteOperationComplete = try SiteOperationComplete(json)
 //   let translations = try Translations(json)
+//   let updateUserEmailRequest = try UpdateUserEmailRequest(json)
 
 import Foundation
 
@@ -107,6 +108,7 @@ public enum MessageType: String, Codable {
     case siteInfo = "SITE_INFO"
     case siteOperationComplete = "SITE_OPERATION_COMPLETE"
     case translation = "TRANSLATION"
+    case updateUserEmailRequest = "UPDATE_USER_EMAIL_REQUEST"
     case welcomeMessageShown = "WELCOME_MESSAGE_SHOWN"
 }
 
@@ -2407,6 +2409,67 @@ public extension TranslationsWelcomeScreen {
             howItWorks: howItWorks ?? self.howItWorks,
             securePayments: securePayments ?? self.securePayments,
             title: title ?? self.title
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - UpdateUserEmailRequest
+public struct UpdateUserEmailRequest: Codable {
+    public let email: String
+    public let operationDescriptor, operationID: String?
+    public let type: MessageType
+
+    enum CodingKeys: String, CodingKey {
+        case email, operationDescriptor
+        case operationID = "operationId"
+        case type
+    }
+
+    public init(email: String, operationDescriptor: String?, operationID: String?, type: MessageType) {
+        self.email = email
+        self.operationDescriptor = operationDescriptor
+        self.operationID = operationID
+        self.type = type
+    }
+}
+
+// MARK: UpdateUserEmailRequest convenience initializers and mutators
+
+public extension UpdateUserEmailRequest {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(UpdateUserEmailRequest.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        email: String? = nil,
+        operationDescriptor: String?? = nil,
+        operationID: String?? = nil,
+        type: MessageType? = nil
+    ) -> UpdateUserEmailRequest {
+        return UpdateUserEmailRequest(
+            email: email ?? self.email,
+            operationDescriptor: operationDescriptor ?? self.operationDescriptor,
+            operationID: operationID ?? self.operationID,
+            type: type ?? self.type
         )
     }
 
