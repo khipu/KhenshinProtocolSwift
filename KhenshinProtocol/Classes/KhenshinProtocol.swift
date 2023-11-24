@@ -1386,7 +1386,7 @@ public struct OperationInfo: Codable {
     public let operationID, subject: String?
     public let type: MessageType
     public let urls: Urls?
-    public let welcomeScreen: OperationInfoWelcomeScreen?
+    public let welcomeScreen: WelcomeScreen?
 
     enum CodingKeys: String, CodingKey {
         case acceptManualTransfer, amount, body, merchant
@@ -1394,7 +1394,7 @@ public struct OperationInfo: Codable {
         case subject, type, urls, welcomeScreen
     }
 
-    public init(acceptManualTransfer: Bool?, amount: String?, body: String?, merchant: Merchant?, operationID: String?, subject: String?, type: MessageType, urls: Urls?, welcomeScreen: OperationInfoWelcomeScreen?) {
+    public init(acceptManualTransfer: Bool?, amount: String?, body: String?, merchant: Merchant?, operationID: String?, subject: String?, type: MessageType, urls: Urls?, welcomeScreen: WelcomeScreen?) {
         self.acceptManualTransfer = acceptManualTransfer
         self.amount = amount
         self.body = body
@@ -1434,7 +1434,7 @@ public extension OperationInfo {
         subject: String?? = nil,
         type: MessageType? = nil,
         urls: Urls?? = nil,
-        welcomeScreen: OperationInfoWelcomeScreen?? = nil
+        welcomeScreen: WelcomeScreen?? = nil
     ) -> OperationInfo {
         return OperationInfo(
             acceptManualTransfer: acceptManualTransfer ?? self.acceptManualTransfer,
@@ -1576,8 +1576,8 @@ public extension Urls {
     }
 }
 
-// MARK: - OperationInfoWelcomeScreen
-public struct OperationInfoWelcomeScreen: Codable {
+// MARK: - WelcomeScreen
+public struct WelcomeScreen: Codable {
     public let enabled: Bool?
     public let ttl: Double?
 
@@ -1587,11 +1587,11 @@ public struct OperationInfoWelcomeScreen: Codable {
     }
 }
 
-// MARK: OperationInfoWelcomeScreen convenience initializers and mutators
+// MARK: WelcomeScreen convenience initializers and mutators
 
-public extension OperationInfoWelcomeScreen {
+public extension WelcomeScreen {
     init(data: Data) throws {
-        self = try newJSONDecoder().decode(OperationInfoWelcomeScreen.self, from: data)
+        self = try newJSONDecoder().decode(WelcomeScreen.self, from: data)
     }
 
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -1608,8 +1608,8 @@ public extension OperationInfoWelcomeScreen {
     func with(
         enabled: Bool?? = nil,
         ttl: Double?? = nil
-    ) -> OperationInfoWelcomeScreen {
-        return OperationInfoWelcomeScreen(
+    ) -> WelcomeScreen {
+        return WelcomeScreen(
             enabled: enabled ?? self.enabled,
             ttl: ttl ?? self.ttl
         )
@@ -2177,21 +2177,12 @@ public enum OperationType: String, Codable {
 
 // MARK: - Translations
 public struct Translations: Codable {
-    public let failureMessageHeaderText: String?
-    public let label: Label?
-    public let linkText: LinkText?
-    public let operationSummary, progressMessage: String?
+    public let data: [String: String]?
     public let type: MessageType
-    public let welcomeScreen: TranslationsWelcomeScreen?
 
-    public init(failureMessageHeaderText: String?, label: Label?, linkText: LinkText?, operationSummary: String?, progressMessage: String?, type: MessageType, welcomeScreen: TranslationsWelcomeScreen?) {
-        self.failureMessageHeaderText = failureMessageHeaderText
-        self.label = label
-        self.linkText = linkText
-        self.operationSummary = operationSummary
-        self.progressMessage = progressMessage
+    public init(data: [String: String]?, type: MessageType) {
+        self.data = data
         self.type = type
-        self.welcomeScreen = welcomeScreen
     }
 }
 
@@ -2214,201 +2205,12 @@ public extension Translations {
     }
 
     func with(
-        failureMessageHeaderText: String?? = nil,
-        label: Label?? = nil,
-        linkText: LinkText?? = nil,
-        operationSummary: String?? = nil,
-        progressMessage: String?? = nil,
-        type: MessageType? = nil,
-        welcomeScreen: TranslationsWelcomeScreen?? = nil
+        data: [String: String]?? = nil,
+        type: MessageType? = nil
     ) -> Translations {
         return Translations(
-            failureMessageHeaderText: failureMessageHeaderText ?? self.failureMessageHeaderText,
-            label: label ?? self.label,
-            linkText: linkText ?? self.linkText,
-            operationSummary: operationSummary ?? self.operationSummary,
-            progressMessage: progressMessage ?? self.progressMessage,
-            type: type ?? self.type,
-            welcomeScreen: welcomeScreen ?? self.welcomeScreen
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-// MARK: - Label
-public struct Label: Codable {
-    public let amount, bank, error, merchant: String?
-    public let operationCode, personalIdentifier, subject: String?
-
-    public init(amount: String?, bank: String?, error: String?, merchant: String?, operationCode: String?, personalIdentifier: String?, subject: String?) {
-        self.amount = amount
-        self.bank = bank
-        self.error = error
-        self.merchant = merchant
-        self.operationCode = operationCode
-        self.personalIdentifier = personalIdentifier
-        self.subject = subject
-    }
-}
-
-// MARK: Label convenience initializers and mutators
-
-public extension Label {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(Label.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        amount: String?? = nil,
-        bank: String?? = nil,
-        error: String?? = nil,
-        merchant: String?? = nil,
-        operationCode: String?? = nil,
-        personalIdentifier: String?? = nil,
-        subject: String?? = nil
-    ) -> Label {
-        return Label(
-            amount: amount ?? self.amount,
-            bank: bank ?? self.bank,
-            error: error ?? self.error,
-            merchant: merchant ?? self.merchant,
-            operationCode: operationCode ?? self.operationCode,
-            personalIdentifier: personalIdentifier ?? self.personalIdentifier,
-            subject: subject ?? self.subject
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-// MARK: - LinkText
-public struct LinkText: Codable {
-    public let acceptConditions, cancel, changePaymentMethod: String?
-
-    public init(acceptConditions: String?, cancel: String?, changePaymentMethod: String?) {
-        self.acceptConditions = acceptConditions
-        self.cancel = cancel
-        self.changePaymentMethod = changePaymentMethod
-    }
-}
-
-// MARK: LinkText convenience initializers and mutators
-
-public extension LinkText {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(LinkText.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        acceptConditions: String?? = nil,
-        cancel: String?? = nil,
-        changePaymentMethod: String?? = nil
-    ) -> LinkText {
-        return LinkText(
-            acceptConditions: acceptConditions ?? self.acceptConditions,
-            cancel: cancel ?? self.cancel,
-            changePaymentMethod: changePaymentMethod ?? self.changePaymentMethod
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-// MARK: - TranslationsWelcomeScreen
-public struct TranslationsWelcomeScreen: Codable {
-    public let button, confirmation, connectWithYourBank, encryptedConnection: String
-    public let enterCredentials, howItWorks, securePayments, title: String
-
-    public init(button: String, confirmation: String, connectWithYourBank: String, encryptedConnection: String, enterCredentials: String, howItWorks: String, securePayments: String, title: String) {
-        self.button = button
-        self.confirmation = confirmation
-        self.connectWithYourBank = connectWithYourBank
-        self.encryptedConnection = encryptedConnection
-        self.enterCredentials = enterCredentials
-        self.howItWorks = howItWorks
-        self.securePayments = securePayments
-        self.title = title
-    }
-}
-
-// MARK: TranslationsWelcomeScreen convenience initializers and mutators
-
-public extension TranslationsWelcomeScreen {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(TranslationsWelcomeScreen.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        button: String? = nil,
-        confirmation: String? = nil,
-        connectWithYourBank: String? = nil,
-        encryptedConnection: String? = nil,
-        enterCredentials: String? = nil,
-        howItWorks: String? = nil,
-        securePayments: String? = nil,
-        title: String? = nil
-    ) -> TranslationsWelcomeScreen {
-        return TranslationsWelcomeScreen(
-            button: button ?? self.button,
-            confirmation: confirmation ?? self.confirmation,
-            connectWithYourBank: connectWithYourBank ?? self.connectWithYourBank,
-            encryptedConnection: encryptedConnection ?? self.encryptedConnection,
-            enterCredentials: enterCredentials ?? self.enterCredentials,
-            howItWorks: howItWorks ?? self.howItWorks,
-            securePayments: securePayments ?? self.securePayments,
-            title: title ?? self.title
+            data: data ?? self.data,
+            type: type ?? self.type
         )
     }
 
