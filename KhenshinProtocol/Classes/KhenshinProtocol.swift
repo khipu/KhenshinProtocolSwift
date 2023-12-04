@@ -1381,7 +1381,7 @@ public extension OperationFinish {
 // MARK: - OperationInfo
 public struct OperationInfo: Codable {
     public let acceptManualTransfer: Bool?
-    public let amount, body: String?
+    public let amount, body, email: String?
     public let merchant: Merchant?
     public let operationID, subject: String?
     public let type: MessageType
@@ -1389,15 +1389,16 @@ public struct OperationInfo: Codable {
     public let welcomeScreen: WelcomeScreen?
 
     enum CodingKeys: String, CodingKey {
-        case acceptManualTransfer, amount, body, merchant
+        case acceptManualTransfer, amount, body, email, merchant
         case operationID = "operationId"
         case subject, type, urls, welcomeScreen
     }
 
-    public init(acceptManualTransfer: Bool?, amount: String?, body: String?, merchant: Merchant?, operationID: String?, subject: String?, type: MessageType, urls: Urls?, welcomeScreen: WelcomeScreen?) {
+    public init(acceptManualTransfer: Bool?, amount: String?, body: String?, email: String?, merchant: Merchant?, operationID: String?, subject: String?, type: MessageType, urls: Urls?, welcomeScreen: WelcomeScreen?) {
         self.acceptManualTransfer = acceptManualTransfer
         self.amount = amount
         self.body = body
+        self.email = email
         self.merchant = merchant
         self.operationID = operationID
         self.subject = subject
@@ -1429,6 +1430,7 @@ public extension OperationInfo {
         acceptManualTransfer: Bool?? = nil,
         amount: String?? = nil,
         body: String?? = nil,
+        email: String?? = nil,
         merchant: Merchant?? = nil,
         operationID: String?? = nil,
         subject: String?? = nil,
@@ -1440,6 +1442,7 @@ public extension OperationInfo {
             acceptManualTransfer: acceptManualTransfer ?? self.acceptManualTransfer,
             amount: amount ?? self.amount,
             body: body ?? self.body,
+            email: email ?? self.email,
             merchant: merchant ?? self.merchant,
             operationID: operationID ?? self.operationID,
             subject: subject ?? self.subject,
