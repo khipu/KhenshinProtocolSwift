@@ -1788,19 +1788,21 @@ public extension SessionCookie {
 
 // MARK: - OperationSuccess
 public struct OperationSuccess: Codable {
+    public let canUpdateEmail: Bool?
     public let type: MessageType
     public let body, exitURL, operationID, resultMessage: String?
     public let summaryLabels: SummaryLabel?
     public let title: String?
 
     enum CodingKeys: String, CodingKey {
-        case type, body
+        case canUpdateEmail, type, body
         case exitURL = "exitUrl"
         case operationID = "operationId"
         case resultMessage, summaryLabels, title
     }
 
-    public init(type: MessageType, body: String?, exitURL: String?, operationID: String?, resultMessage: String?, summaryLabels: SummaryLabel?, title: String?) {
+    public init(canUpdateEmail: Bool?, type: MessageType, body: String?, exitURL: String?, operationID: String?, resultMessage: String?, summaryLabels: SummaryLabel?, title: String?) {
+        self.canUpdateEmail = canUpdateEmail
         self.type = type
         self.body = body
         self.exitURL = exitURL
@@ -1830,6 +1832,7 @@ public extension OperationSuccess {
     }
 
     func with(
+        canUpdateEmail: Bool?? = nil,
         type: MessageType? = nil,
         body: String?? = nil,
         exitURL: String?? = nil,
@@ -1839,6 +1842,7 @@ public extension OperationSuccess {
         title: String?? = nil
     ) -> OperationSuccess {
         return OperationSuccess(
+            canUpdateEmail: canUpdateEmail ?? self.canUpdateEmail,
             type: type ?? self.type,
             body: body ?? self.body,
             exitURL: exitURL ?? self.exitURL,
