@@ -886,11 +886,11 @@ public enum FormItemTypes: String, Codable {
 
 // MARK: - Progress
 public struct Progress: Codable {
-    public let current, progressTotal: Int?
+    public let current, total: Int?
 
-    public init(current: Int?, progressTotal: Int?) {
+    public init(current: Int?, total: Int?) {
         self.current = current
-        self.progressTotal = progressTotal
+        self.total = total
     }
 }
 
@@ -914,11 +914,11 @@ public extension Progress {
 
     func with(
         current: Int?? = nil,
-        progressTotal: Int?? = nil
+        total: Int?? = nil
     ) -> Progress {
         return Progress(
             current: current ?? self.current,
-            progressTotal: progressTotal ?? self.progressTotal
+            total: total ?? self.total
         )
     }
 

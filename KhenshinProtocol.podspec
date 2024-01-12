@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'KhenshinProtocol'
-  s.version          = '1.0.31'
+  s.version          = '1.0.32'
   s.summary          = 'Small utility pod to use the khenshin websocket protocol'
 
 # This description is used to generate tags and improve search results.
