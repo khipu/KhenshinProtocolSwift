@@ -12,6 +12,7 @@
 //   let operationFailure = try OperationFailure(json)
 //   let operationFinish = try OperationFinish(json)
 //   let operationInfo = try OperationInfo(json)
+//   let operationMustContinue = try OperationMustContinue(json)
 //   let operationRequest = try OperationRequest(json)
 //   let operationResponse = try OperationResponse(json)
 //   let operationSuccess = try OperationSuccess(json)
@@ -98,6 +99,7 @@ public enum MessageType: String, Codable {
     case operationDescriptorInfo = "OPERATION_DESCRIPTOR_INFO"
     case operationFailure = "OPERATION_FAILURE"
     case operationInfo = "OPERATION_INFO"
+    case operationMustContinue = "OPERATION_MUST_CONTINUE"
     case operationRequest = "OPERATION_REQUEST"
     case operationResponse = "OPERATION_RESPONSE"
     case operationSuccess = "OPERATION_SUCCESS"
@@ -1615,6 +1617,82 @@ public extension WelcomeScreen {
         return WelcomeScreen(
             enabled: enabled ?? self.enabled,
             ttl: ttl ?? self.ttl
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - OperationMustContinue
+public struct OperationMustContinue: Codable {
+    public let type: MessageType
+    public let body, exitURL, operationID, resultMessage: String?
+    public let summaryLabels: SummaryLabel?
+    public let title: String?
+    public let reason: FailureReasonType?
+
+    enum CodingKeys: String, CodingKey {
+        case type, body
+        case exitURL = "exitUrl"
+        case operationID = "operationId"
+        case resultMessage, summaryLabels, title, reason
+    }
+
+    public init(type: MessageType, body: String?, exitURL: String?, operationID: String?, resultMessage: String?, summaryLabels: SummaryLabel?, title: String?, reason: FailureReasonType?) {
+        self.type = type
+        self.body = body
+        self.exitURL = exitURL
+        self.operationID = operationID
+        self.resultMessage = resultMessage
+        self.summaryLabels = summaryLabels
+        self.title = title
+        self.reason = reason
+    }
+}
+
+// MARK: OperationMustContinue convenience initializers and mutators
+
+public extension OperationMustContinue {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(OperationMustContinue.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        type: MessageType? = nil,
+        body: String?? = nil,
+        exitURL: String?? = nil,
+        operationID: String?? = nil,
+        resultMessage: String?? = nil,
+        summaryLabels: SummaryLabel?? = nil,
+        title: String?? = nil,
+        reason: FailureReasonType?? = nil
+    ) -> OperationMustContinue {
+        return OperationMustContinue(
+            type: type ?? self.type,
+            body: body ?? self.body,
+            exitURL: exitURL ?? self.exitURL,
+            operationID: operationID ?? self.operationID,
+            resultMessage: resultMessage ?? self.resultMessage,
+            summaryLabels: summaryLabels ?? self.summaryLabels,
+            title: title ?? self.title,
+            reason: reason ?? self.reason
         )
     }
 
