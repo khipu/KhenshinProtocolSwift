@@ -1149,25 +1149,25 @@ public extension OperationDescriptorInfo {
 // MARK: - OperationFailure
 public struct OperationFailure: Codable {
     public let type: MessageType
-    public let body, exitURL, operationID, resultMessage: String?
-    public let summaryLabels: SummaryLabel?
-    public let title: String?
+    public let body: String?
+    public let events: [OperationEvent]?
+    public let exitURL, operationID, resultMessage, title: String?
     public let reason: FailureReasonType?
 
     enum CodingKeys: String, CodingKey {
-        case type, body
+        case type, body, events
         case exitURL = "exitUrl"
         case operationID = "operationId"
-        case resultMessage, summaryLabels, title, reason
+        case resultMessage, title, reason
     }
 
-    public init(type: MessageType, body: String?, exitURL: String?, operationID: String?, resultMessage: String?, summaryLabels: SummaryLabel?, title: String?, reason: FailureReasonType?) {
+    public init(type: MessageType, body: String?, events: [OperationEvent]?, exitURL: String?, operationID: String?, resultMessage: String?, title: String?, reason: FailureReasonType?) {
         self.type = type
         self.body = body
+        self.events = events
         self.exitURL = exitURL
         self.operationID = operationID
         self.resultMessage = resultMessage
-        self.summaryLabels = summaryLabels
         self.title = title
         self.reason = reason
     }
@@ -1194,22 +1194,70 @@ public extension OperationFailure {
     func with(
         type: MessageType? = nil,
         body: String?? = nil,
+        events: [OperationEvent]?? = nil,
         exitURL: String?? = nil,
         operationID: String?? = nil,
         resultMessage: String?? = nil,
-        summaryLabels: SummaryLabel?? = nil,
         title: String?? = nil,
         reason: FailureReasonType?? = nil
     ) -> OperationFailure {
         return OperationFailure(
             type: type ?? self.type,
             body: body ?? self.body,
+            events: events ?? self.events,
             exitURL: exitURL ?? self.exitURL,
             operationID: operationID ?? self.operationID,
             resultMessage: resultMessage ?? self.resultMessage,
-            summaryLabels: summaryLabels ?? self.summaryLabels,
             title: title ?? self.title,
             reason: reason ?? self.reason
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - OperationEvent
+public struct OperationEvent: Codable {
+    public let name: String
+    public let timestamp: Date
+
+    public init(name: String, timestamp: Date) {
+        self.name = name
+        self.timestamp = timestamp
+    }
+}
+
+// MARK: OperationEvent convenience initializers and mutators
+
+public extension OperationEvent {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(OperationEvent.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        name: String? = nil,
+        timestamp: Date? = nil
+    ) -> OperationEvent {
+        return OperationEvent(
+            name: name ?? self.name,
+            timestamp: timestamp ?? self.timestamp
         )
     }
 
@@ -1239,95 +1287,26 @@ public enum FailureReasonType: String, Codable {
     case userCanceled = "USER_CANCELED"
 }
 
-// MARK: - SummaryLabel
-public struct SummaryLabel: Codable {
-    public let amount, bank, error, merchant: String?
-    public let operationID, personalIdentifier, subject: String?
-
-    enum CodingKeys: String, CodingKey {
-        case amount, bank, error, merchant
-        case operationID = "operationId"
-        case personalIdentifier, subject
-    }
-
-    public init(amount: String?, bank: String?, error: String?, merchant: String?, operationID: String?, personalIdentifier: String?, subject: String?) {
-        self.amount = amount
-        self.bank = bank
-        self.error = error
-        self.merchant = merchant
-        self.operationID = operationID
-        self.personalIdentifier = personalIdentifier
-        self.subject = subject
-    }
-}
-
-// MARK: SummaryLabel convenience initializers and mutators
-
-public extension SummaryLabel {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(SummaryLabel.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        amount: String?? = nil,
-        bank: String?? = nil,
-        error: String?? = nil,
-        merchant: String?? = nil,
-        operationID: String?? = nil,
-        personalIdentifier: String?? = nil,
-        subject: String?? = nil
-    ) -> SummaryLabel {
-        return SummaryLabel(
-            amount: amount ?? self.amount,
-            bank: bank ?? self.bank,
-            error: error ?? self.error,
-            merchant: merchant ?? self.merchant,
-            operationID: operationID ?? self.operationID,
-            personalIdentifier: personalIdentifier ?? self.personalIdentifier,
-            subject: subject ?? self.subject
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
 // MARK: - OperationFinish
 public struct OperationFinish: Codable {
-    public let body, exitURL, operationID, resultMessage: String?
-    public let summaryLabels: SummaryLabel?
-    public let title: String?
+    public let body: String?
+    public let events: [OperationEvent]?
+    public let exitURL, operationID, resultMessage, title: String?
     public let type: MessageType
 
     enum CodingKeys: String, CodingKey {
-        case body
+        case body, events
         case exitURL = "exitUrl"
         case operationID = "operationId"
-        case resultMessage, summaryLabels, title, type
+        case resultMessage, title, type
     }
 
-    public init(body: String?, exitURL: String?, operationID: String?, resultMessage: String?, summaryLabels: SummaryLabel?, title: String?, type: MessageType) {
+    public init(body: String?, events: [OperationEvent]?, exitURL: String?, operationID: String?, resultMessage: String?, title: String?, type: MessageType) {
         self.body = body
+        self.events = events
         self.exitURL = exitURL
         self.operationID = operationID
         self.resultMessage = resultMessage
-        self.summaryLabels = summaryLabels
         self.title = title
         self.type = type
     }
@@ -1353,19 +1332,19 @@ public extension OperationFinish {
 
     func with(
         body: String?? = nil,
+        events: [OperationEvent]?? = nil,
         exitURL: String?? = nil,
         operationID: String?? = nil,
         resultMessage: String?? = nil,
-        summaryLabels: SummaryLabel?? = nil,
         title: String?? = nil,
         type: MessageType? = nil
     ) -> OperationFinish {
         return OperationFinish(
             body: body ?? self.body,
+            events: events ?? self.events,
             exitURL: exitURL ?? self.exitURL,
             operationID: operationID ?? self.operationID,
             resultMessage: resultMessage ?? self.resultMessage,
-            summaryLabels: summaryLabels ?? self.summaryLabels,
             title: title ?? self.title,
             type: type ?? self.type
         )
@@ -1632,25 +1611,25 @@ public extension WelcomeScreen {
 // MARK: - OperationMustContinue
 public struct OperationMustContinue: Codable {
     public let type: MessageType
-    public let body, exitURL, operationID, resultMessage: String?
-    public let summaryLabels: SummaryLabel?
-    public let title: String?
+    public let body: String?
+    public let events: [OperationEvent]?
+    public let exitURL, operationID, resultMessage, title: String?
     public let reason: FailureReasonType?
 
     enum CodingKeys: String, CodingKey {
-        case type, body
+        case type, body, events
         case exitURL = "exitUrl"
         case operationID = "operationId"
-        case resultMessage, summaryLabels, title, reason
+        case resultMessage, title, reason
     }
 
-    public init(type: MessageType, body: String?, exitURL: String?, operationID: String?, resultMessage: String?, summaryLabels: SummaryLabel?, title: String?, reason: FailureReasonType?) {
+    public init(type: MessageType, body: String?, events: [OperationEvent]?, exitURL: String?, operationID: String?, resultMessage: String?, title: String?, reason: FailureReasonType?) {
         self.type = type
         self.body = body
+        self.events = events
         self.exitURL = exitURL
         self.operationID = operationID
         self.resultMessage = resultMessage
-        self.summaryLabels = summaryLabels
         self.title = title
         self.reason = reason
     }
@@ -1677,20 +1656,20 @@ public extension OperationMustContinue {
     func with(
         type: MessageType? = nil,
         body: String?? = nil,
+        events: [OperationEvent]?? = nil,
         exitURL: String?? = nil,
         operationID: String?? = nil,
         resultMessage: String?? = nil,
-        summaryLabels: SummaryLabel?? = nil,
         title: String?? = nil,
         reason: FailureReasonType?? = nil
     ) -> OperationMustContinue {
         return OperationMustContinue(
             type: type ?? self.type,
             body: body ?? self.body,
+            events: events ?? self.events,
             exitURL: exitURL ?? self.exitURL,
             operationID: operationID ?? self.operationID,
             resultMessage: resultMessage ?? self.resultMessage,
-            summaryLabels: summaryLabels ?? self.summaryLabels,
             title: title ?? self.title,
             reason: reason ?? self.reason
         )
@@ -1868,25 +1847,25 @@ public extension SessionCookie {
 public struct OperationSuccess: Codable {
     public let canUpdateEmail: Bool?
     public let type: MessageType
-    public let body, exitURL, operationID, resultMessage: String?
-    public let summaryLabels: SummaryLabel?
-    public let title: String?
+    public let body: String?
+    public let events: [OperationEvent]?
+    public let exitURL, operationID, resultMessage, title: String?
 
     enum CodingKeys: String, CodingKey {
-        case canUpdateEmail, type, body
+        case canUpdateEmail, type, body, events
         case exitURL = "exitUrl"
         case operationID = "operationId"
-        case resultMessage, summaryLabels, title
+        case resultMessage, title
     }
 
-    public init(canUpdateEmail: Bool?, type: MessageType, body: String?, exitURL: String?, operationID: String?, resultMessage: String?, summaryLabels: SummaryLabel?, title: String?) {
+    public init(canUpdateEmail: Bool?, type: MessageType, body: String?, events: [OperationEvent]?, exitURL: String?, operationID: String?, resultMessage: String?, title: String?) {
         self.canUpdateEmail = canUpdateEmail
         self.type = type
         self.body = body
+        self.events = events
         self.exitURL = exitURL
         self.operationID = operationID
         self.resultMessage = resultMessage
-        self.summaryLabels = summaryLabels
         self.title = title
     }
 }
@@ -1913,20 +1892,20 @@ public extension OperationSuccess {
         canUpdateEmail: Bool?? = nil,
         type: MessageType? = nil,
         body: String?? = nil,
+        events: [OperationEvent]?? = nil,
         exitURL: String?? = nil,
         operationID: String?? = nil,
         resultMessage: String?? = nil,
-        summaryLabels: SummaryLabel?? = nil,
         title: String?? = nil
     ) -> OperationSuccess {
         return OperationSuccess(
             canUpdateEmail: canUpdateEmail ?? self.canUpdateEmail,
             type: type ?? self.type,
             body: body ?? self.body,
+            events: events ?? self.events,
             exitURL: exitURL ?? self.exitURL,
             operationID: operationID ?? self.operationID,
             resultMessage: resultMessage ?? self.resultMessage,
-            summaryLabels: summaryLabels ?? self.summaryLabels,
             title: title ?? self.title
         )
     }
@@ -1943,25 +1922,25 @@ public extension OperationSuccess {
 // MARK: - OperationWarning
 public struct OperationWarning: Codable {
     public let type: MessageType
-    public let body, exitURL, operationID, resultMessage: String?
-    public let summaryLabels: SummaryLabel?
-    public let title: String?
+    public let body: String?
+    public let events: [OperationEvent]?
+    public let exitURL, operationID, resultMessage, title: String?
     public let reason: FailureReasonType?
 
     enum CodingKeys: String, CodingKey {
-        case type, body
+        case type, body, events
         case exitURL = "exitUrl"
         case operationID = "operationId"
-        case resultMessage, summaryLabels, title, reason
+        case resultMessage, title, reason
     }
 
-    public init(type: MessageType, body: String?, exitURL: String?, operationID: String?, resultMessage: String?, summaryLabels: SummaryLabel?, title: String?, reason: FailureReasonType?) {
+    public init(type: MessageType, body: String?, events: [OperationEvent]?, exitURL: String?, operationID: String?, resultMessage: String?, title: String?, reason: FailureReasonType?) {
         self.type = type
         self.body = body
+        self.events = events
         self.exitURL = exitURL
         self.operationID = operationID
         self.resultMessage = resultMessage
-        self.summaryLabels = summaryLabels
         self.title = title
         self.reason = reason
     }
@@ -1988,20 +1967,20 @@ public extension OperationWarning {
     func with(
         type: MessageType? = nil,
         body: String?? = nil,
+        events: [OperationEvent]?? = nil,
         exitURL: String?? = nil,
         operationID: String?? = nil,
         resultMessage: String?? = nil,
-        summaryLabels: SummaryLabel?? = nil,
         title: String?? = nil,
         reason: FailureReasonType?? = nil
     ) -> OperationWarning {
         return OperationWarning(
             type: type ?? self.type,
             body: body ?? self.body,
+            events: events ?? self.events,
             exitURL: exitURL ?? self.exitURL,
             operationID: operationID ?? self.operationID,
             resultMessage: resultMessage ?? self.resultMessage,
-            summaryLabels: summaryLabels ?? self.summaryLabels,
             title: title ?? self.title,
             reason: reason ?? self.reason
         )
