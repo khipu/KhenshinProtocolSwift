@@ -1226,10 +1226,12 @@ public extension OperationFailure {
 public struct OperationEvent: Codable {
     public let name: String
     public let timestamp: Date
+    public let type: String
 
-    public init(name: String, timestamp: Date) {
+    public init(name: String, timestamp: Date, type: String) {
         self.name = name
         self.timestamp = timestamp
+        self.type = type
     }
 }
 
@@ -1253,11 +1255,13 @@ public extension OperationEvent {
 
     func with(
         name: String? = nil,
-        timestamp: Date? = nil
+        timestamp: Date? = nil,
+        type: String? = nil
     ) -> OperationEvent {
         return OperationEvent(
             name: name ?? self.name,
-            timestamp: timestamp ?? self.timestamp
+            timestamp: timestamp ?? self.timestamp,
+            type: type ?? self.type
         )
     }
 
