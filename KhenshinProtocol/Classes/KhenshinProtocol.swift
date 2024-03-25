@@ -1039,10 +1039,10 @@ public extension FormItemAnswer {
 
 // MARK: - OpenAuthorizationApp
 public struct OpenAuthorizationApp: Codable {
-    public let data: String
+    public let data: OpenAuthorizationAppData
     public let type: MessageType
 
-    public init(data: String, type: MessageType) {
+    public init(data: OpenAuthorizationAppData, type: MessageType) {
         self.data = data
         self.type = type
     }
@@ -1067,12 +1067,151 @@ public extension OpenAuthorizationApp {
     }
 
     func with(
-        data: String? = nil,
+        data: OpenAuthorizationAppData? = nil,
         type: MessageType? = nil
     ) -> OpenAuthorizationApp {
         return OpenAuthorizationApp(
             data: data ?? self.data,
             type: type ?? self.type
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - OpenAuthorizationAppData
+public struct OpenAuthorizationAppData: Codable {
+    public let android: AndroidAppDetails?
+    public let ios: IOSAppDetails?
+
+    public init(android: AndroidAppDetails?, ios: IOSAppDetails?) {
+        self.android = android
+        self.ios = ios
+    }
+}
+
+// MARK: OpenAuthorizationAppData convenience initializers and mutators
+
+public extension OpenAuthorizationAppData {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(OpenAuthorizationAppData.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        android: AndroidAppDetails?? = nil,
+        ios: IOSAppDetails?? = nil
+    ) -> OpenAuthorizationAppData {
+        return OpenAuthorizationAppData(
+            android: android ?? self.android,
+            ios: ios ?? self.ios
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - AndroidAppDetails
+public struct AndroidAppDetails: Codable {
+    public let packageName: String
+
+    public init(packageName: String) {
+        self.packageName = packageName
+    }
+}
+
+// MARK: AndroidAppDetails convenience initializers and mutators
+
+public extension AndroidAppDetails {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(AndroidAppDetails.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        packageName: String? = nil
+    ) -> AndroidAppDetails {
+        return AndroidAppDetails(
+            packageName: packageName ?? self.packageName
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - IOSAppDetails
+public struct IOSAppDetails: Codable {
+    public let schema, store: String
+
+    public init(schema: String, store: String) {
+        self.schema = schema
+        self.store = store
+    }
+}
+
+// MARK: IOSAppDetails convenience initializers and mutators
+
+public extension IOSAppDetails {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(IOSAppDetails.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        schema: String? = nil,
+        store: String? = nil
+    ) -> IOSAppDetails {
+        return IOSAppDetails(
+            schema: schema ?? self.schema,
+            store: store ?? self.store
         )
     }
 
