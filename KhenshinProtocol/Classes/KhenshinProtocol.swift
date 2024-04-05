@@ -336,15 +336,16 @@ public struct FormItem: Codable {
     public let replaceValue, requiredState: String?
     public let secure: Bool?
     public let selectorType, title: String?
+    public let truncateTo: Double?
     public let type: FormItemTypes
 
     enum CodingKeys: String, CodingKey {
         case bottomText, checked, checkedColor, code, color, dataTable, decimal, defaultValue, email, focused, format, group, groupedOptions, height, hint, id, image, imageData, items, label, labels, length, mandatory, mask, maxLength, maxValue, minLength, minValue, number, options, otp, pattern, placeHolder
         case formItemPrefix = "prefix"
-        case replacePattern, replaceValue, requiredState, secure, selectorType, title, type
+        case replacePattern, replaceValue, requiredState, secure, selectorType, title, truncateTo, type
     }
 
-    public init(bottomText: String?, checked: Bool?, checkedColor: String?, code: String?, color: String?, dataTable: DataTable?, decimal: Bool?, defaultValue: String?, email: Bool?, focused: Bool?, format: String?, group: String?, groupedOptions: GroupedOptions?, height: Double?, hint: String?, id: String, image: String?, imageData: String?, items: String?, label: String?, labels: [String]?, length: Double?, mandatory: Bool?, mask: String?, maxLength: Double?, maxValue: Double?, minLength: Double?, minValue: Double?, number: Bool?, options: [ListOption]?, otp: Bool?, pattern: String?, placeHolder: String?, formItemPrefix: String?, replacePattern: String?, replaceValue: String?, requiredState: String?, secure: Bool?, selectorType: String?, title: String?, type: FormItemTypes) {
+    public init(bottomText: String?, checked: Bool?, checkedColor: String?, code: String?, color: String?, dataTable: DataTable?, decimal: Bool?, defaultValue: String?, email: Bool?, focused: Bool?, format: String?, group: String?, groupedOptions: GroupedOptions?, height: Double?, hint: String?, id: String, image: String?, imageData: String?, items: String?, label: String?, labels: [String]?, length: Double?, mandatory: Bool?, mask: String?, maxLength: Double?, maxValue: Double?, minLength: Double?, minValue: Double?, number: Bool?, options: [ListOption]?, otp: Bool?, pattern: String?, placeHolder: String?, formItemPrefix: String?, replacePattern: String?, replaceValue: String?, requiredState: String?, secure: Bool?, selectorType: String?, title: String?, truncateTo: Double?, type: FormItemTypes) {
         self.bottomText = bottomText
         self.checked = checked
         self.checkedColor = checkedColor
@@ -385,6 +386,7 @@ public struct FormItem: Codable {
         self.secure = secure
         self.selectorType = selectorType
         self.title = title
+        self.truncateTo = truncateTo
         self.type = type
     }
 }
@@ -448,6 +450,7 @@ public extension FormItem {
         secure: Bool?? = nil,
         selectorType: String?? = nil,
         title: String?? = nil,
+        truncateTo: Double?? = nil,
         type: FormItemTypes? = nil
     ) -> FormItem {
         return FormItem(
@@ -491,6 +494,7 @@ public extension FormItem {
             secure: secure ?? self.secure,
             selectorType: selectorType ?? self.selectorType,
             title: title ?? self.title,
+            truncateTo: truncateTo ?? self.truncateTo,
             type: type ?? self.type
         )
     }
