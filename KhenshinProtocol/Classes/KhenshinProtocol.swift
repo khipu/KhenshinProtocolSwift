@@ -1752,20 +1752,24 @@ public extension WelcomeScreen {
 // MARK: - OperationMustContinue
 public struct OperationMustContinue: Codable {
     public let type: MessageType
+    public let continueURL: String
     public let body: String?
     public let events: [OperationEvent]?
     public let exitURL, operationID, resultMessage, title: String?
     public let reason: FailureReasonType?
 
     enum CodingKeys: String, CodingKey {
-        case type, body, events
+        case type
+        case continueURL = "continueUrl"
+        case body, events
         case exitURL = "exitUrl"
         case operationID = "operationId"
         case resultMessage, title, reason
     }
 
-    public init(type: MessageType, body: String?, events: [OperationEvent]?, exitURL: String?, operationID: String?, resultMessage: String?, title: String?, reason: FailureReasonType?) {
+    public init(type: MessageType, continueURL: String, body: String?, events: [OperationEvent]?, exitURL: String?, operationID: String?, resultMessage: String?, title: String?, reason: FailureReasonType?) {
         self.type = type
+        self.continueURL = continueURL
         self.body = body
         self.events = events
         self.exitURL = exitURL
@@ -1796,6 +1800,7 @@ public extension OperationMustContinue {
 
     func with(
         type: MessageType? = nil,
+        continueURL: String? = nil,
         body: String?? = nil,
         events: [OperationEvent]?? = nil,
         exitURL: String?? = nil,
@@ -1806,6 +1811,7 @@ public extension OperationMustContinue {
     ) -> OperationMustContinue {
         return OperationMustContinue(
             type: type ?? self.type,
+            continueURL: continueURL ?? self.continueURL,
             body: body ?? self.body,
             events: events ?? self.events,
             exitURL: exitURL ?? self.exitURL,
