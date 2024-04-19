@@ -171,7 +171,7 @@ public struct FormRequest: Codable {
     public let title: String?
     public let type: MessageType
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case alternativeAction, continueLabel, errorMessage, id, info, items, pageTitle, progress, rememberValues
         case termsURL = "termsUrl"
         case timeout, title, type
@@ -257,7 +257,7 @@ public extension FormRequest {
 public struct AlternativeAction: Codable {
     public let id, label, name: String?
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case id = "Id"
         case label = "Label"
         case name = "Name"
@@ -339,7 +339,7 @@ public struct FormItem: Codable {
     public let truncateTo: Double?
     public let type: FormItemTypes
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case bottomText, checked, checkedColor, code, color, dataTable, decimal, defaultValue, email, focused, format, group, groupedOptions, height, hint, id, image, imageData, items, label, labels, length, mandatory, mask, maxLength, maxValue, minLength, minValue, number, options, otp, pattern, placeHolder
         case formItemPrefix = "prefix"
         case replacePattern, replaceValue, requiredState, secure, selectorType, title, truncateTo, type
@@ -1239,7 +1239,7 @@ public struct OperationDescriptorInfo: Codable {
     public let operationID, operationType: String
     public let type: MessageType
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case data
         case operationID = "operationId"
         case operationType, type
@@ -1302,7 +1302,7 @@ public struct OperationFailure: Codable {
     public let exitURL, operationID, resultMessage, title: String?
     public let reason: FailureReasonType?
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case type, body, events
         case exitURL = "exitUrl"
         case operationID = "operationId"
@@ -1446,7 +1446,7 @@ public struct OperationFinish: Codable {
     public let exitURL, operationID, resultMessage, title: String?
     public let type: MessageType
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case body, events
         case exitURL = "exitUrl"
         case operationID = "operationId"
@@ -1521,7 +1521,7 @@ public struct OperationInfo: Codable {
     public let urls: Urls?
     public let welcomeScreen: WelcomeScreen?
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case acceptManualTransfer, amount, body, email, merchant
         case operationID = "operationId"
         case subject, type, urls, welcomeScreen
@@ -1647,19 +1647,20 @@ public struct Urls: Codable {
     public let attachment: [String]?
     public let cancel, changePaymentMethod, fallback: String?
     public let image: String?
-    public let manualTransfer, urlsReturn: String?
+    public let info, manualTransfer, urlsReturn: String?
 
-    enum CodingKeys: String, CodingKey {
-        case attachment, cancel, changePaymentMethod, fallback, image, manualTransfer
+    public enum CodingKeys: String, CodingKey {
+        case attachment, cancel, changePaymentMethod, fallback, image, info, manualTransfer
         case urlsReturn = "return"
     }
 
-    public init(attachment: [String]?, cancel: String?, changePaymentMethod: String?, fallback: String?, image: String?, manualTransfer: String?, urlsReturn: String?) {
+    public init(attachment: [String]?, cancel: String?, changePaymentMethod: String?, fallback: String?, image: String?, info: String?, manualTransfer: String?, urlsReturn: String?) {
         self.attachment = attachment
         self.cancel = cancel
         self.changePaymentMethod = changePaymentMethod
         self.fallback = fallback
         self.image = image
+        self.info = info
         self.manualTransfer = manualTransfer
         self.urlsReturn = urlsReturn
     }
@@ -1689,6 +1690,7 @@ public extension Urls {
         changePaymentMethod: String?? = nil,
         fallback: String?? = nil,
         image: String?? = nil,
+        info: String?? = nil,
         manualTransfer: String?? = nil,
         urlsReturn: String?? = nil
     ) -> Urls {
@@ -1698,6 +1700,7 @@ public extension Urls {
             changePaymentMethod: changePaymentMethod ?? self.changePaymentMethod,
             fallback: fallback ?? self.fallback,
             image: image ?? self.image,
+            info: info ?? self.info,
             manualTransfer: manualTransfer ?? self.manualTransfer,
             urlsReturn: urlsReturn ?? self.urlsReturn
         )
@@ -1763,24 +1766,20 @@ public extension WelcomeScreen {
 // MARK: - OperationMustContinue
 public struct OperationMustContinue: Codable {
     public let type: MessageType
-    public let continueURL: String
     public let body: String?
     public let events: [OperationEvent]?
     public let exitURL, operationID, resultMessage, title: String?
     public let reason: FailureReasonType?
 
-    enum CodingKeys: String, CodingKey {
-        case type
-        case continueURL = "continueUrl"
-        case body, events
+    public enum CodingKeys: String, CodingKey {
+        case type, body, events
         case exitURL = "exitUrl"
         case operationID = "operationId"
         case resultMessage, title, reason
     }
 
-    public init(type: MessageType, continueURL: String, body: String?, events: [OperationEvent]?, exitURL: String?, operationID: String?, resultMessage: String?, title: String?, reason: FailureReasonType?) {
+    public init(type: MessageType, body: String?, events: [OperationEvent]?, exitURL: String?, operationID: String?, resultMessage: String?, title: String?, reason: FailureReasonType?) {
         self.type = type
-        self.continueURL = continueURL
         self.body = body
         self.events = events
         self.exitURL = exitURL
@@ -1811,7 +1810,6 @@ public extension OperationMustContinue {
 
     func with(
         type: MessageType? = nil,
-        continueURL: String? = nil,
         body: String?? = nil,
         events: [OperationEvent]?? = nil,
         exitURL: String?? = nil,
@@ -1822,7 +1820,6 @@ public extension OperationMustContinue {
     ) -> OperationMustContinue {
         return OperationMustContinue(
             type: type ?? self.type,
-            continueURL: continueURL ?? self.continueURL,
             body: body ?? self.body,
             events: events ?? self.events,
             exitURL: exitURL ?? self.exitURL,
@@ -1896,7 +1893,7 @@ public struct OperationResponse: Codable {
     public let sessionCookie: SessionCookie?
     public let type: MessageType
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case fingerprint, operationDescriptor
         case operationID = "operationId"
         case sessionCookie, type
@@ -2009,7 +2006,7 @@ public struct OperationSuccess: Codable {
     public let events: [OperationEvent]?
     public let exitURL, operationID, resultMessage, title: String?
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case canUpdateEmail, type, body, events
         case exitURL = "exitUrl"
         case operationID = "operationId"
@@ -2085,7 +2082,7 @@ public struct OperationWarning: Codable {
     public let exitURL, operationID, resultMessage, title: String?
     public let reason: FailureReasonType?
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case type, body, events
         case exitURL = "exitUrl"
         case operationID = "operationId"
