@@ -1372,11 +1372,9 @@ public extension OperationFailure {
 
 // MARK: - OperationEvent
 public struct OperationEvent: Codable {
-    public let name: String
-    public let timestamp: Date
-    public let type: String
+    public let name, timestamp, type: String
 
-    public init(name: String, timestamp: Date, type: String) {
+    public init(name: String, timestamp: String, type: String) {
         self.name = name
         self.timestamp = timestamp
         self.type = type
@@ -1403,7 +1401,7 @@ public extension OperationEvent {
 
     func with(
         name: String? = nil,
-        timestamp: Date? = nil,
+        timestamp: String? = nil,
         type: String? = nil
     ) -> OperationEvent {
         return OperationEvent(
