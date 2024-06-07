@@ -323,7 +323,9 @@ public struct FormItem: Codable {
     public let height: Double?
     public let hint: String?
     public let id: String
-    public let image, imageData, items, label: String?
+    public let image, imageData: String?
+    public let items: [String]?
+    public let label: String?
     public let labels: [String]?
     public let length: Double?
     public let mandatory: Bool?
@@ -345,7 +347,7 @@ public struct FormItem: Codable {
         case replacePattern, replaceValue, requiredState, secure, selectorType, title, truncateTo, type
     }
 
-    public init(bottomText: String?, checked: Bool?, checkedColor: String?, code: String?, color: String?, dataTable: DataTable?, decimal: Bool?, defaultValue: String?, email: Bool?, focused: Bool?, format: String?, group: String?, groupedOptions: GroupedOptions?, height: Double?, hint: String?, id: String, image: String?, imageData: String?, items: String?, label: String?, labels: [String]?, length: Double?, mandatory: Bool?, mask: String?, maxLength: Double?, maxValue: Double?, minLength: Double?, minValue: Double?, number: Bool?, options: [ListOption]?, otp: Bool?, pattern: String?, placeHolder: String?, formItemPrefix: String?, replacePattern: String?, replaceValue: String?, requiredState: String?, secure: Bool?, selectorType: String?, title: String?, truncateTo: Double?, type: FormItemTypes) {
+    public init(bottomText: String?, checked: Bool?, checkedColor: String?, code: String?, color: String?, dataTable: DataTable?, decimal: Bool?, defaultValue: String?, email: Bool?, focused: Bool?, format: String?, group: String?, groupedOptions: GroupedOptions?, height: Double?, hint: String?, id: String, image: String?, imageData: String?, items: [String]?, label: String?, labels: [String]?, length: Double?, mandatory: Bool?, mask: String?, maxLength: Double?, maxValue: Double?, minLength: Double?, minValue: Double?, number: Bool?, options: [ListOption]?, otp: Bool?, pattern: String?, placeHolder: String?, formItemPrefix: String?, replacePattern: String?, replaceValue: String?, requiredState: String?, secure: Bool?, selectorType: String?, title: String?, truncateTo: Double?, type: FormItemTypes) {
         self.bottomText = bottomText
         self.checked = checked
         self.checkedColor = checkedColor
@@ -428,7 +430,7 @@ public extension FormItem {
         id: String? = nil,
         image: String?? = nil,
         imageData: String?? = nil,
-        items: String?? = nil,
+        items: [String]?? = nil,
         label: String?? = nil,
         labels: [String]?? = nil,
         length: Double?? = nil,
