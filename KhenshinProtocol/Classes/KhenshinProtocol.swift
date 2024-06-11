@@ -311,12 +311,10 @@ public extension AlternativeAction {
 
 // MARK: - FormItem
 public struct FormItem: Codable {
-    public let bottomText: String?
-    public let checked: Bool?
-    public let checkedColor, code, color: String?
+    public let bottomText, code, color: String?
     public let dataTable: DataTable?
     public let decimal: Bool?
-    public let defaultValue: String?
+    public let defaultState, defaultValue: String?
     public let email, focused: Bool?
     public let format, group: String?
     public let groupedOptions: GroupedOptions?
@@ -328,7 +326,6 @@ public struct FormItem: Codable {
     public let label: String?
     public let labels: [String]?
     public let length: Double?
-    public let mandatory: Bool?
     public let mask: String?
     public let maxLength, maxValue, minLength, minValue: Double?
     public let number: Bool?
@@ -342,19 +339,18 @@ public struct FormItem: Codable {
     public let type: FormItemTypes
 
     public enum CodingKeys: String, CodingKey {
-        case bottomText, checked, checkedColor, code, color, dataTable, decimal, defaultValue, email, focused, format, group, groupedOptions, height, hint, id, image, imageData, items, label, labels, length, mandatory, mask, maxLength, maxValue, minLength, minValue, number, options, otp, pattern, placeHolder
+        case bottomText, code, color, dataTable, decimal, defaultState, defaultValue, email, focused, format, group, groupedOptions, height, hint, id, image, imageData, items, label, labels, length, mask, maxLength, maxValue, minLength, minValue, number, options, otp, pattern, placeHolder
         case formItemPrefix = "prefix"
         case replacePattern, replaceValue, requiredState, secure, selectorType, title, truncateTo, type
     }
 
-    public init(bottomText: String?, checked: Bool?, checkedColor: String?, code: String?, color: String?, dataTable: DataTable?, decimal: Bool?, defaultValue: String?, email: Bool?, focused: Bool?, format: String?, group: String?, groupedOptions: GroupedOptions?, height: Double?, hint: String?, id: String, image: String?, imageData: String?, items: [String]?, label: String?, labels: [String]?, length: Double?, mandatory: Bool?, mask: String?, maxLength: Double?, maxValue: Double?, minLength: Double?, minValue: Double?, number: Bool?, options: [ListOption]?, otp: Bool?, pattern: String?, placeHolder: String?, formItemPrefix: String?, replacePattern: String?, replaceValue: String?, requiredState: String?, secure: Bool?, selectorType: String?, title: String?, truncateTo: Double?, type: FormItemTypes) {
+    public init(bottomText: String?, code: String?, color: String?, dataTable: DataTable?, decimal: Bool?, defaultState: String?, defaultValue: String?, email: Bool?, focused: Bool?, format: String?, group: String?, groupedOptions: GroupedOptions?, height: Double?, hint: String?, id: String, image: String?, imageData: String?, items: [String]?, label: String?, labels: [String]?, length: Double?, mask: String?, maxLength: Double?, maxValue: Double?, minLength: Double?, minValue: Double?, number: Bool?, options: [ListOption]?, otp: Bool?, pattern: String?, placeHolder: String?, formItemPrefix: String?, replacePattern: String?, replaceValue: String?, requiredState: String?, secure: Bool?, selectorType: String?, title: String?, truncateTo: Double?, type: FormItemTypes) {
         self.bottomText = bottomText
-        self.checked = checked
-        self.checkedColor = checkedColor
         self.code = code
         self.color = color
         self.dataTable = dataTable
         self.decimal = decimal
+        self.defaultState = defaultState
         self.defaultValue = defaultValue
         self.email = email
         self.focused = focused
@@ -370,7 +366,6 @@ public struct FormItem: Codable {
         self.label = label
         self.labels = labels
         self.length = length
-        self.mandatory = mandatory
         self.mask = mask
         self.maxLength = maxLength
         self.maxValue = maxValue
@@ -413,12 +408,11 @@ public extension FormItem {
 
     func with(
         bottomText: String?? = nil,
-        checked: Bool?? = nil,
-        checkedColor: String?? = nil,
         code: String?? = nil,
         color: String?? = nil,
         dataTable: DataTable?? = nil,
         decimal: Bool?? = nil,
+        defaultState: String?? = nil,
         defaultValue: String?? = nil,
         email: Bool?? = nil,
         focused: Bool?? = nil,
@@ -434,7 +428,6 @@ public extension FormItem {
         label: String?? = nil,
         labels: [String]?? = nil,
         length: Double?? = nil,
-        mandatory: Bool?? = nil,
         mask: String?? = nil,
         maxLength: Double?? = nil,
         maxValue: Double?? = nil,
@@ -457,12 +450,11 @@ public extension FormItem {
     ) -> FormItem {
         return FormItem(
             bottomText: bottomText ?? self.bottomText,
-            checked: checked ?? self.checked,
-            checkedColor: checkedColor ?? self.checkedColor,
             code: code ?? self.code,
             color: color ?? self.color,
             dataTable: dataTable ?? self.dataTable,
             decimal: decimal ?? self.decimal,
+            defaultState: defaultState ?? self.defaultState,
             defaultValue: defaultValue ?? self.defaultValue,
             email: email ?? self.email,
             focused: focused ?? self.focused,
@@ -478,7 +470,6 @@ public extension FormItem {
             label: label ?? self.label,
             labels: labels ?? self.labels,
             length: length ?? self.length,
-            mandatory: mandatory ?? self.mandatory,
             mask: mask ?? self.mask,
             maxLength: maxLength ?? self.maxLength,
             maxValue: maxValue ?? self.maxValue,
