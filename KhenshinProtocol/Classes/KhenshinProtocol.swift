@@ -1093,10 +1093,11 @@ public extension GeolocationRequest {
 
 // MARK: - GeolocationResponse
 public struct GeolocationResponse: Codable {
-    public let latitude, longitude: Double?
+    public let accuracy, latitude, longitude: Double?
     public let type: MessageType
 
-    public init(latitude: Double?, longitude: Double?, type: MessageType) {
+    public init(accuracy: Double?, latitude: Double?, longitude: Double?, type: MessageType) {
+        self.accuracy = accuracy
         self.latitude = latitude
         self.longitude = longitude
         self.type = type
@@ -1122,11 +1123,13 @@ public extension GeolocationResponse {
     }
 
     func with(
+        accuracy: Double?? = nil,
         latitude: Double?? = nil,
         longitude: Double?? = nil,
         type: MessageType? = nil
     ) -> GeolocationResponse {
         return GeolocationResponse(
+            accuracy: accuracy ?? self.accuracy,
             latitude: latitude ?? self.latitude,
             longitude: longitude ?? self.longitude,
             type: type ?? self.type
