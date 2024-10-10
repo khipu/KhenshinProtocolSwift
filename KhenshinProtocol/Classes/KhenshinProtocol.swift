@@ -6,6 +6,8 @@
 //   let formItemTypes = try? JSONDecoder().decode(FormItemTypes.self, from: jsonData)
 //   let formRequest = try FormRequest(json)
 //   let formResponse = try FormResponse(json)
+//   let geolocationRequest = try GeolocationRequest(json)
+//   let geolocationResponse = try GeolocationResponse(json)
 //   let messageType = try? JSONDecoder().decode(MessageType.self, from: jsonData)
 //   let openAuthorizationApp = try OpenAuthorizationApp(json)
 //   let operationDescriptorInfo = try OperationDescriptorInfo(json)
@@ -94,6 +96,8 @@ public enum MessageType: String, Codable {
     case cancelOperationComplete = "CANCEL_OPERATION_COMPLETE"
     case formRequest = "FORM_REQUEST"
     case formResponse = "FORM_RESPONSE"
+    case geolocationRequest = "GEOLOCATION_REQUEST"
+    case geolocationResponse = "GEOLOCATION_RESPONSE"
     case openAuthorizationApp = "OPEN_AUTHORIZATION_APP"
     case operationDescriptorInfo = "OPERATION_DESCRIPTOR_INFO"
     case operationFailure = "OPERATION_FAILURE"
@@ -1027,6 +1031,105 @@ public extension FormItemAnswer {
             id: id ?? self.id,
             type: type ?? self.type,
             value: value ?? self.value
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - GeolocationRequest
+public struct GeolocationRequest: Codable {
+    public let message: String?
+    public let type: MessageType
+
+    public init(message: String?, type: MessageType) {
+        self.message = message
+        self.type = type
+    }
+}
+
+// MARK: GeolocationRequest convenience initializers and mutators
+
+public extension GeolocationRequest {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(GeolocationRequest.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        message: String?? = nil,
+        type: MessageType? = nil
+    ) -> GeolocationRequest {
+        return GeolocationRequest(
+            message: message ?? self.message,
+            type: type ?? self.type
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - GeolocationResponse
+public struct GeolocationResponse: Codable {
+    public let latitude, longitude: Double?
+    public let type: MessageType
+
+    public init(latitude: Double?, longitude: Double?, type: MessageType) {
+        self.latitude = latitude
+        self.longitude = longitude
+        self.type = type
+    }
+}
+
+// MARK: GeolocationResponse convenience initializers and mutators
+
+public extension GeolocationResponse {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(GeolocationResponse.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        latitude: Double?? = nil,
+        longitude: Double?? = nil,
+        type: MessageType? = nil
+    ) -> GeolocationResponse {
+        return GeolocationResponse(
+            latitude: latitude ?? self.latitude,
+            longitude: longitude ?? self.longitude,
+            type: type ?? self.type
         )
     }
 
