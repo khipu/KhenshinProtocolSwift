@@ -1,5 +1,5 @@
 PODS:
-  - KhenshinProtocol (0.1.0)
+  - KhenshinProtocol (1.0.48)
 
 DEPENDENCIES:
   - KhenshinProtocol (from `../`)
@@ -9,8 +9,8 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  KhenshinProtocol: a00fbf06a5c15bdaae5008e701538fe82c5ebea0
+  KhenshinProtocol: 9865801842c6c1aa4909359c3679dee47edab94f
 
-PODFILE CHECKSUM: a29a0797d96ee293ca6362c8167e6e4cf4ea9bd1
+PODFILE CHECKSUM: 287b42752350331584ed0a3ff8c1f86a1d812fae
 
-COCOAPODS: 1.13.0
+COCOAPODS: 1.15.2
