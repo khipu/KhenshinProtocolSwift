@@ -1,0 +1,41 @@
+name: Deploy to Cocoapods
+
+on:
+  workflow_run:
+    workflows: ["Run Tests"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Cocoapods # https://cocoapods.org/pods/KhenshinProtocol
+    runs-on: macos-latest
+
+    # Only deploy if tests were successful
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Cocoapods
+        run: pod install --project-directory=Example
+
+      - name: Create and Push Tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eo pipefail
+          VERSION=$(grep -oE "s.version.*= *'[^']*'" KhenshinProtocol.podspec | grep -oE "'[^']*'" | tr -d "'")
+          echo "Detected version: $VERSION"
+          git tag $VERSION
+          git push origin $VERSION
+
+      - name: Deploy to Cocoapods
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+        run: |
+          set -eo pipefail
+          pod lib lint --allow-warnings
+          pod trunk push --allow-warnings
