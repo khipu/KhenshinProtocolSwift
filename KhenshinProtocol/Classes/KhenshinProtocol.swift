@@ -1045,12 +1045,10 @@ public extension FormItemAnswer {
 
 // MARK: - GeolocationRequest
 public struct GeolocationRequest: Codable {
-    public let mandatory: Bool?
     public let message: String?
     public let type: MessageType
 
-    public init(mandatory: Bool?, message: String?, type: MessageType) {
-        self.mandatory = mandatory
+    public init(message: String?, type: MessageType) {
         self.message = message
         self.type = type
     }
@@ -1075,12 +1073,10 @@ public extension GeolocationRequest {
     }
 
     func with(
-        mandatory: Bool?? = nil,
         message: String?? = nil,
         type: MessageType? = nil
     ) -> GeolocationRequest {
         return GeolocationRequest(
-            mandatory: mandatory ?? self.mandatory,
             message: message ?? self.message,
             type: type ?? self.type
         )
