@@ -22,16 +22,6 @@ jobs:
       - name: Install Cocoapods
         run: pod install --project-directory=Example
 
-      - name: Create and Push Tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -eo pipefail
-          VERSION=$(grep -oE "s.version.*= *'[^']*'" KhenshinProtocol.podspec | grep -oE "'[^']*'" | tr -d "'")
-          echo "Detected version: $VERSION"
-          git tag $VERSION
-          git push origin $VERSION
-
       - name: Deploy to Cocoapods
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
