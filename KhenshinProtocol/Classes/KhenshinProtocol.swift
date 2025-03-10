@@ -110,6 +110,7 @@ public enum MessageType: String, Codable {
     case preAuthorizationCanceled = "PRE_AUTHORIZATION_CANCELED"
     case preAuthorizationStarted = "PRE_AUTHORIZATION_STARTED"
     case progressInfo = "PROGRESS_INFO"
+    case sessionReplaySaved = "SESSION_REPLAY_SAVED"
     case siteInfo = "SITE_INFO"
     case siteOperationComplete = "SITE_OPERATION_COMPLETE"
     case translation = "TRANSLATION"
@@ -1618,7 +1619,9 @@ public struct OperationInfo: Codable {
     public let acceptManualTransfer: Bool?
     public let amount, body, email: String?
     public let merchant: Merchant?
-    public let operationID, subject: String?
+    public let operationID: String?
+    public let sessionReplaySaved: Bool?
+    public let subject: String?
     public let type: MessageType
     public let urls: Urls?
     public let welcomeScreen: WelcomeScreen?
@@ -1626,16 +1629,17 @@ public struct OperationInfo: Codable {
     public enum CodingKeys: String, CodingKey {
         case acceptManualTransfer, amount, body, email, merchant
         case operationID = "operationId"
-        case subject, type, urls, welcomeScreen
+        case sessionReplaySaved, subject, type, urls, welcomeScreen
     }
 
-    public init(acceptManualTransfer: Bool?, amount: String?, body: String?, email: String?, merchant: Merchant?, operationID: String?, subject: String?, type: MessageType, urls: Urls?, welcomeScreen: WelcomeScreen?) {
+    public init(acceptManualTransfer: Bool?, amount: String?, body: String?, email: String?, merchant: Merchant?, operationID: String?, sessionReplaySaved: Bool?, subject: String?, type: MessageType, urls: Urls?, welcomeScreen: WelcomeScreen?) {
         self.acceptManualTransfer = acceptManualTransfer
         self.amount = amount
         self.body = body
         self.email = email
         self.merchant = merchant
         self.operationID = operationID
+        self.sessionReplaySaved = sessionReplaySaved
         self.subject = subject
         self.type = type
         self.urls = urls
@@ -1668,6 +1672,7 @@ public extension OperationInfo {
         email: String?? = nil,
         merchant: Merchant?? = nil,
         operationID: String?? = nil,
+        sessionReplaySaved: Bool?? = nil,
         subject: String?? = nil,
         type: MessageType? = nil,
         urls: Urls?? = nil,
@@ -1680,6 +1685,7 @@ public extension OperationInfo {
             email: email ?? self.email,
             merchant: merchant ?? self.merchant,
             operationID: operationID ?? self.operationID,
+            sessionReplaySaved: sessionReplaySaved ?? self.sessionReplaySaved,
             subject: subject ?? self.subject,
             type: type ?? self.type,
             urls: urls ?? self.urls,
