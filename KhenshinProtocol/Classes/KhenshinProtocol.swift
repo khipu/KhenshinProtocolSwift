@@ -1698,10 +1698,12 @@ public extension OperationInfo {
 
 // MARK: - Merchant
 public struct Merchant: Codable {
+    public let country: Country?
     public let logo: String?
     public let name: String?
 
-    public init(logo: String?, name: String?) {
+    public init(country: Country?, logo: String?, name: String?) {
+        self.country = country
         self.logo = logo
         self.name = name
     }
@@ -1726,11 +1728,60 @@ public extension Merchant {
     }
 
     func with(
+        country: Country?? = nil,
         logo: String?? = nil,
         name: String?? = nil
     ) -> Merchant {
         return Merchant(
+            country: country ?? self.country,
             logo: logo ?? self.logo,
+            name: name ?? self.name
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - Country
+public struct Country: Codable {
+    public let code, name: String?
+
+    public init(code: String?, name: String?) {
+        self.code = code
+        self.name = name
+    }
+}
+
+// MARK: Country convenience initializers and mutators
+
+public extension Country {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(Country.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        code: String?? = nil,
+        name: String?? = nil
+    ) -> Country {
+        return Country(
+            code: code ?? self.code,
             name: name ?? self.name
         )
     }
