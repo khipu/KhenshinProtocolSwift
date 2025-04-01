@@ -2613,10 +2613,17 @@ public extension Translations {
 public struct WebauthnAuthorization: Codable {
     public let body: [String: JSONAny]?
     public let type: MessageType
+    public let userID: String?
 
-    public init(body: [String: JSONAny]?, type: MessageType) {
+    public enum CodingKeys: String, CodingKey {
+        case body, type
+        case userID = "userId"
+    }
+
+    public init(body: [String: JSONAny]?, type: MessageType, userID: String?) {
         self.body = body
         self.type = type
+        self.userID = userID
     }
 }
 
@@ -2640,11 +2647,13 @@ public extension WebauthnAuthorization {
 
     func with(
         body: [String: JSONAny]?? = nil,
-        type: MessageType? = nil
+        type: MessageType? = nil,
+        userID: String?? = nil
     ) -> WebauthnAuthorization {
         return WebauthnAuthorization(
             body: body ?? self.body,
-            type: type ?? self.type
+            type: type ?? self.type,
+            userID: userID ?? self.userID
         )
     }
 
@@ -2660,9 +2669,16 @@ public extension WebauthnAuthorization {
 // MARK: - WebauthnAuthorizationOptions
 public struct WebauthnAuthorizationOptions: Codable {
     public let type: MessageType
+    public let userID: String?
 
-    public init(type: MessageType) {
+    public enum CodingKeys: String, CodingKey {
+        case type
+        case userID = "userId"
+    }
+
+    public init(type: MessageType, userID: String?) {
         self.type = type
+        self.userID = userID
     }
 }
 
@@ -2685,10 +2701,12 @@ public extension WebauthnAuthorizationOptions {
     }
 
     func with(
-        type: MessageType? = nil
+        type: MessageType? = nil,
+        userID: String?? = nil
     ) -> WebauthnAuthorizationOptions {
         return WebauthnAuthorizationOptions(
-            type: type ?? self.type
+            type: type ?? self.type,
+            userID: userID ?? self.userID
         )
     }
 
@@ -2705,10 +2723,17 @@ public extension WebauthnAuthorizationOptions {
 public struct WebauthnRegistration: Codable {
     public let body: [String: JSONAny]?
     public let type: MessageType
+    public let userID: String?
 
-    public init(body: [String: JSONAny]?, type: MessageType) {
+    public enum CodingKeys: String, CodingKey {
+        case body, type
+        case userID = "userId"
+    }
+
+    public init(body: [String: JSONAny]?, type: MessageType, userID: String?) {
         self.body = body
         self.type = type
+        self.userID = userID
     }
 }
 
@@ -2732,11 +2757,13 @@ public extension WebauthnRegistration {
 
     func with(
         body: [String: JSONAny]?? = nil,
-        type: MessageType? = nil
+        type: MessageType? = nil,
+        userID: String?? = nil
     ) -> WebauthnRegistration {
         return WebauthnRegistration(
             body: body ?? self.body,
-            type: type ?? self.type
+            type: type ?? self.type,
+            userID: userID ?? self.userID
         )
     }
 
@@ -2752,9 +2779,16 @@ public extension WebauthnRegistration {
 // MARK: - WebauthnRegistrationOptions
 public struct WebauthnRegistrationOptions: Codable {
     public let type: MessageType
+    public let userID: String?
 
-    public init(type: MessageType) {
+    public enum CodingKeys: String, CodingKey {
+        case type
+        case userID = "userId"
+    }
+
+    public init(type: MessageType, userID: String?) {
         self.type = type
+        self.userID = userID
     }
 }
 
@@ -2777,10 +2811,12 @@ public extension WebauthnRegistrationOptions {
     }
 
     func with(
-        type: MessageType? = nil
+        type: MessageType? = nil,
+        userID: String?? = nil
     ) -> WebauthnRegistrationOptions {
         return WebauthnRegistrationOptions(
-            type: type ?? self.type
+            type: type ?? self.type,
+            userID: userID ?? self.userID
         )
     }
 
