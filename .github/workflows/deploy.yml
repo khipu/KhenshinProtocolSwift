@@ -1,15 +1,19 @@
 name: Deploy to Cocoapods
 
 on:
-  push:
-    branches:
-      - prod
+  workflow_run:
+    workflows: ["Run Tests"]
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:
   deploy:
     name: Deploy to Cocoapods # https://cocoapods.org/pods/KhenshinProtocol
     runs-on: macos-latest
+
+    # Only deploy if tests were successful
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout
