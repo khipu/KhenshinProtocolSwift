@@ -110,6 +110,7 @@ public enum MessageType: String, Codable {
     case operationMustContinue = "OPERATION_MUST_CONTINUE"
     case operationRequest = "OPERATION_REQUEST"
     case operationResponse = "OPERATION_RESPONSE"
+    case operationStatusMessage = "OPERATION_STATUS_MESSAGE"
     case operationSuccess = "OPERATION_SUCCESS"
     case operationWarning = "OPERATION_WARNING"
     case preAuthorizationCanceled = "PRE_AUTHORIZATION_CANCELED"
