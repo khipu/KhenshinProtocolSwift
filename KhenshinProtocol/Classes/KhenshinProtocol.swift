@@ -17,6 +17,7 @@
 //   let operationMustContinue = try OperationMustContinue(json)
 //   let operationRequest = try OperationRequest(json)
 //   let operationResponse = try OperationResponse(json)
+//   let operationStatusMessage = try OperationStatusMessage(json)
 //   let operationSuccess = try OperationSuccess(json)
 //   let operationWarning = try OperationWarning(json)
 //   let preAuthorizationCanceled = try PreAuthorizationCanceled(json)
@@ -2153,6 +2154,54 @@ public extension SessionCookie {
         return SessionCookie(
             name: name ?? self.name,
             value: value ?? self.value
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - OperationStatusMessage
+public struct OperationStatusMessage: Codable {
+    public let message: String?
+    public let type: MessageType
+
+    public init(message: String?, type: MessageType) {
+        self.message = message
+        self.type = type
+    }
+}
+
+// MARK: OperationStatusMessage convenience initializers and mutators
+
+public extension OperationStatusMessage {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(OperationStatusMessage.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        message: String?? = nil,
+        type: MessageType? = nil
+    ) -> OperationStatusMessage {
+        return OperationStatusMessage(
+            message: message ?? self.message,
+            type: type ?? self.type
         )
     }
 
