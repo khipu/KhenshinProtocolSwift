@@ -17,7 +17,7 @@ jobs:
       - name: Select Xcode Version
         run: |
           sudo xcode-select -s /Applications/Xcode_16.0.app
-          xcodebuild -downloadPlatform <iOS|watchOS|tvOS|visionOS>
+          xcodebuild -downloadPlatform iOS
           
       - name: Find Simulator
         id: find-simulator
