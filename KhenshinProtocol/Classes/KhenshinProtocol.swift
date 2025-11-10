@@ -1715,11 +1715,13 @@ public extension OperationInfo {
 // MARK: - Merchant
 public struct Merchant: Codable {
     public let country: Country?
+    public let id: Double?
     public let logo: String?
     public let name: String?
 
-    public init(country: Country?, logo: String?, name: String?) {
+    public init(country: Country?, id: Double?, logo: String?, name: String?) {
         self.country = country
+        self.id = id
         self.logo = logo
         self.name = name
     }
@@ -1745,11 +1747,13 @@ public extension Merchant {
 
     func with(
         country: Country?? = nil,
+        id: Double?? = nil,
         logo: String?? = nil,
         name: String?? = nil
     ) -> Merchant {
         return Merchant(
             country: country ?? self.country,
+            id: id ?? self.id,
             logo: logo ?? self.logo,
             name: name ?? self.name
         )
