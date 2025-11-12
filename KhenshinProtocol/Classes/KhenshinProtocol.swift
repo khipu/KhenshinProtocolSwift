@@ -175,6 +175,8 @@ public extension CancelOperationComplete {
 public struct FormRequest: Codable {
     public let alternativeAction: AlternativeAction?
     public let continueLabel, errorMessage: String?
+    /// Optional icon identifier indicating the form type/purpose
+    public let icon: Icon?
     public let id: String
     public let info: String?
     public let items: [FormItem]
@@ -187,15 +189,16 @@ public struct FormRequest: Codable {
     public let type: MessageType
 
     public enum CodingKeys: String, CodingKey {
-        case alternativeAction, continueLabel, errorMessage, id, info, items, pageTitle, progress, rememberValues
+        case alternativeAction, continueLabel, errorMessage, icon, id, info, items, pageTitle, progress, rememberValues
         case termsURL = "termsUrl"
         case timeout, title, type
     }
 
-    public init(alternativeAction: AlternativeAction?, continueLabel: String?, errorMessage: String?, id: String, info: String?, items: [FormItem], pageTitle: String?, progress: Progress?, rememberValues: Bool?, termsURL: String?, timeout: Int?, title: String?, type: MessageType) {
+    public init(alternativeAction: AlternativeAction?, continueLabel: String?, errorMessage: String?, icon: Icon?, id: String, info: String?, items: [FormItem], pageTitle: String?, progress: Progress?, rememberValues: Bool?, termsURL: String?, timeout: Int?, title: String?, type: MessageType) {
         self.alternativeAction = alternativeAction
         self.continueLabel = continueLabel
         self.errorMessage = errorMessage
+        self.icon = icon
         self.id = id
         self.info = info
         self.items = items
@@ -231,6 +234,7 @@ public extension FormRequest {
         alternativeAction: AlternativeAction?? = nil,
         continueLabel: String?? = nil,
         errorMessage: String?? = nil,
+        icon: Icon?? = nil,
         id: String? = nil,
         info: String?? = nil,
         items: [FormItem]? = nil,
@@ -246,6 +250,7 @@ public extension FormRequest {
             alternativeAction: alternativeAction ?? self.alternativeAction,
             continueLabel: continueLabel ?? self.continueLabel,
             errorMessage: errorMessage ?? self.errorMessage,
+            icon: icon ?? self.icon,
             id: id ?? self.id,
             info: info ?? self.info,
             items: items ?? self.items,
@@ -322,6 +327,14 @@ public extension AlternativeAction {
     func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
         return String(data: try self.jsonData(), encoding: encoding)
     }
+}
+
+/// Optional icon identifier indicating the form type/purpose
+public enum Icon: String, Codable {
+    case email = "EMAIL"
+    case login = "LOGIN"
+    case otp = "OTP"
+    case selectAccount = "SELECT_ACCOUNT"
 }
 
 // MARK: - FormItem
