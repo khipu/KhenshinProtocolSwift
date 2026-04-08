@@ -26,6 +26,7 @@
 //   let siteInfo = try SiteInfo(json)
 //   let siteOperationComplete = try SiteOperationComplete(json)
 //   let translations = try Translations(json)
+//   let userCanceled = try UserCanceled(json)
 //   let webauthnAuthorization = try WebauthnAuthorization(json)
 //   let webauthnAuthorizationOptions = try WebauthnAuthorizationOptions(json)
 //   let webauthnRegistration = try WebauthnRegistration(json)
@@ -120,6 +121,7 @@ public enum MessageType: String, Codable {
     case siteInfo = "SITE_INFO"
     case siteOperationComplete = "SITE_OPERATION_COMPLETE"
     case translation = "TRANSLATION"
+    case userCanceled = "USER_CANCELED"
     case webauthnAuthentication = "WEBAUTHN_AUTHENTICATION"
     case webauthnAuthenticationOptions = "WEBAUTHN_AUTHENTICATION_OPTIONS"
     case webauthnRegistration = "WEBAUTHN_REGISTRATION"
@@ -2663,6 +2665,54 @@ public extension Translations {
     ) -> Translations {
         return Translations(
             data: data ?? self.data,
+            type: type ?? self.type
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - UserCanceled
+public struct UserCanceled: Codable {
+    public let message: String?
+    public let type: MessageType
+
+    public init(message: String?, type: MessageType) {
+        self.message = message
+        self.type = type
+    }
+}
+
+// MARK: UserCanceled convenience initializers and mutators
+
+public extension UserCanceled {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(UserCanceled.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        message: String?? = nil,
+        type: MessageType? = nil
+    ) -> UserCanceled {
+        return UserCanceled(
+            message: message ?? self.message,
             type: type ?? self.type
         )
     }
