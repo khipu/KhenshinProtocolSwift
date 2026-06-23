@@ -17,6 +17,7 @@
 //   let operationMustContinue = try OperationMustContinue(json)
 //   let operationRequest = try OperationRequest(json)
 //   let operationResponse = try OperationResponse(json)
+//   let operationStatusMessage = try OperationStatusMessage(json)
 //   let operationSuccess = try OperationSuccess(json)
 //   let operationWarning = try OperationWarning(json)
 //   let preAuthorizationCanceled = try PreAuthorizationCanceled(json)
@@ -25,6 +26,11 @@
 //   let siteInfo = try SiteInfo(json)
 //   let siteOperationComplete = try SiteOperationComplete(json)
 //   let translations = try Translations(json)
+//   let userCanceled = try UserCanceled(json)
+//   let webauthnAuthorization = try WebauthnAuthorization(json)
+//   let webauthnAuthorizationOptions = try WebauthnAuthorizationOptions(json)
+//   let webauthnRegistration = try WebauthnRegistration(json)
+//   let webauthnRegistrationOptions = try WebauthnRegistrationOptions(json)
 
 import Foundation
 
@@ -105,14 +111,21 @@ public enum MessageType: String, Codable {
     case operationMustContinue = "OPERATION_MUST_CONTINUE"
     case operationRequest = "OPERATION_REQUEST"
     case operationResponse = "OPERATION_RESPONSE"
+    case operationStatusMessage = "OPERATION_STATUS_MESSAGE"
     case operationSuccess = "OPERATION_SUCCESS"
     case operationWarning = "OPERATION_WARNING"
     case preAuthorizationCanceled = "PRE_AUTHORIZATION_CANCELED"
     case preAuthorizationStarted = "PRE_AUTHORIZATION_STARTED"
     case progressInfo = "PROGRESS_INFO"
+    case sessionReplaySaved = "SESSION_REPLAY_SAVED"
     case siteInfo = "SITE_INFO"
     case siteOperationComplete = "SITE_OPERATION_COMPLETE"
     case translation = "TRANSLATION"
+    case userCanceled = "USER_CANCELED"
+    case webauthnAuthentication = "WEBAUTHN_AUTHENTICATION"
+    case webauthnAuthenticationOptions = "WEBAUTHN_AUTHENTICATION_OPTIONS"
+    case webauthnRegistration = "WEBAUTHN_REGISTRATION"
+    case webauthnRegistrationOptions = "WEBAUTHN_REGISTRATION_OPTIONS"
     case welcomeMessageShown = "WELCOME_MESSAGE_SHOWN"
 }
 
@@ -164,6 +177,8 @@ public extension CancelOperationComplete {
 public struct FormRequest: Codable {
     public let alternativeAction: AlternativeAction?
     public let continueLabel, errorMessage: String?
+    /// Optional icon identifier indicating the form type/purpose
+    public let icon: Icon?
     public let id: String
     public let info: String?
     public let items: [FormItem]
@@ -176,15 +191,16 @@ public struct FormRequest: Codable {
     public let type: MessageType
 
     public enum CodingKeys: String, CodingKey {
-        case alternativeAction, continueLabel, errorMessage, id, info, items, pageTitle, progress, rememberValues
+        case alternativeAction, continueLabel, errorMessage, icon, id, info, items, pageTitle, progress, rememberValues
         case termsURL = "termsUrl"
         case timeout, title, type
     }
 
-    public init(alternativeAction: AlternativeAction?, continueLabel: String?, errorMessage: String?, id: String, info: String?, items: [FormItem], pageTitle: String?, progress: Progress?, rememberValues: Bool?, termsURL: String?, timeout: Int?, title: String?, type: MessageType) {
+    public init(alternativeAction: AlternativeAction?, continueLabel: String?, errorMessage: String?, icon: Icon?, id: String, info: String?, items: [FormItem], pageTitle: String?, progress: Progress?, rememberValues: Bool?, termsURL: String?, timeout: Int?, title: String?, type: MessageType) {
         self.alternativeAction = alternativeAction
         self.continueLabel = continueLabel
         self.errorMessage = errorMessage
+        self.icon = icon
         self.id = id
         self.info = info
         self.items = items
@@ -220,6 +236,7 @@ public extension FormRequest {
         alternativeAction: AlternativeAction?? = nil,
         continueLabel: String?? = nil,
         errorMessage: String?? = nil,
+        icon: Icon?? = nil,
         id: String? = nil,
         info: String?? = nil,
         items: [FormItem]? = nil,
@@ -235,6 +252,7 @@ public extension FormRequest {
             alternativeAction: alternativeAction ?? self.alternativeAction,
             continueLabel: continueLabel ?? self.continueLabel,
             errorMessage: errorMessage ?? self.errorMessage,
+            icon: icon ?? self.icon,
             id: id ?? self.id,
             info: info ?? self.info,
             items: items ?? self.items,
@@ -311,6 +329,14 @@ public extension AlternativeAction {
     func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
         return String(data: try self.jsonData(), encoding: encoding)
     }
+}
+
+/// Optional icon identifier indicating the form type/purpose
+public enum Icon: String, Codable {
+    case email = "EMAIL"
+    case login = "LOGIN"
+    case otp = "OTP"
+    case selectAccount = "SELECT_ACCOUNT"
 }
 
 // MARK: - FormItem
@@ -1045,12 +1071,10 @@ public extension FormItemAnswer {
 
 // MARK: - GeolocationRequest
 public struct GeolocationRequest: Codable {
-    public let mandatory: Bool?
     public let message: String?
     public let type: MessageType
 
-    public init(mandatory: Bool?, message: String?, type: MessageType) {
-        self.mandatory = mandatory
+    public init(message: String?, type: MessageType) {
         self.message = message
         self.type = type
     }
@@ -1075,12 +1099,10 @@ public extension GeolocationRequest {
     }
 
     func with(
-        mandatory: Bool?? = nil,
         message: String?? = nil,
         type: MessageType? = nil
     ) -> GeolocationRequest {
         return GeolocationRequest(
-            mandatory: mandatory ?? self.mandatory,
             message: message ?? self.message,
             type: type ?? self.type
         )
@@ -1543,6 +1565,7 @@ public enum FailureReasonType: String, Codable {
     case taskFinished = "TASK_FINISHED"
     case taskNotificationError = "TASK_NOTIFICATION_ERROR"
     case userCanceled = "USER_CANCELED"
+    case userDisconnected = "USER_DISCONNECTED"
 }
 
 // MARK: - OperationFinish
@@ -1622,7 +1645,9 @@ public struct OperationInfo: Codable {
     public let acceptManualTransfer: Bool?
     public let amount, body, email: String?
     public let merchant: Merchant?
-    public let operationID, subject: String?
+    public let operationID: String?
+    public let sessionReplaySaved: Bool?
+    public let subject: String?
     public let type: MessageType
     public let urls: Urls?
     public let welcomeScreen: WelcomeScreen?
@@ -1630,16 +1655,17 @@ public struct OperationInfo: Codable {
     public enum CodingKeys: String, CodingKey {
         case acceptManualTransfer, amount, body, email, merchant
         case operationID = "operationId"
-        case subject, type, urls, welcomeScreen
+        case sessionReplaySaved, subject, type, urls, welcomeScreen
     }
 
-    public init(acceptManualTransfer: Bool?, amount: String?, body: String?, email: String?, merchant: Merchant?, operationID: String?, subject: String?, type: MessageType, urls: Urls?, welcomeScreen: WelcomeScreen?) {
+    public init(acceptManualTransfer: Bool?, amount: String?, body: String?, email: String?, merchant: Merchant?, operationID: String?, sessionReplaySaved: Bool?, subject: String?, type: MessageType, urls: Urls?, welcomeScreen: WelcomeScreen?) {
         self.acceptManualTransfer = acceptManualTransfer
         self.amount = amount
         self.body = body
         self.email = email
         self.merchant = merchant
         self.operationID = operationID
+        self.sessionReplaySaved = sessionReplaySaved
         self.subject = subject
         self.type = type
         self.urls = urls
@@ -1672,6 +1698,7 @@ public extension OperationInfo {
         email: String?? = nil,
         merchant: Merchant?? = nil,
         operationID: String?? = nil,
+        sessionReplaySaved: Bool?? = nil,
         subject: String?? = nil,
         type: MessageType? = nil,
         urls: Urls?? = nil,
@@ -1684,6 +1711,7 @@ public extension OperationInfo {
             email: email ?? self.email,
             merchant: merchant ?? self.merchant,
             operationID: operationID ?? self.operationID,
+            sessionReplaySaved: sessionReplaySaved ?? self.sessionReplaySaved,
             subject: subject ?? self.subject,
             type: type ?? self.type,
             urls: urls ?? self.urls,
@@ -1702,10 +1730,14 @@ public extension OperationInfo {
 
 // MARK: - Merchant
 public struct Merchant: Codable {
+    public let country: Country?
+    public let id: Double?
     public let logo: String?
     public let name: String?
 
-    public init(logo: String?, name: String?) {
+    public init(country: Country?, id: Double?, logo: String?, name: String?) {
+        self.country = country
+        self.id = id
         self.logo = logo
         self.name = name
     }
@@ -1730,11 +1762,62 @@ public extension Merchant {
     }
 
     func with(
+        country: Country?? = nil,
+        id: Double?? = nil,
         logo: String?? = nil,
         name: String?? = nil
     ) -> Merchant {
         return Merchant(
+            country: country ?? self.country,
+            id: id ?? self.id,
             logo: logo ?? self.logo,
+            name: name ?? self.name
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - Country
+public struct Country: Codable {
+    public let code, name: String?
+
+    public init(code: String?, name: String?) {
+        self.code = code
+        self.name = name
+    }
+}
+
+// MARK: Country convenience initializers and mutators
+
+public extension Country {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(Country.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        code: String?? = nil,
+        name: String?? = nil
+    ) -> Country {
+        return Country(
+            code: code ?? self.code,
             name: name ?? self.name
         )
     }
@@ -2092,6 +2175,54 @@ public extension SessionCookie {
         return SessionCookie(
             name: name ?? self.name,
             value: value ?? self.value
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - OperationStatusMessage
+public struct OperationStatusMessage: Codable {
+    public let message: String?
+    public let type: MessageType
+
+    public init(message: String?, type: MessageType) {
+        self.message = message
+        self.type = type
+    }
+}
+
+// MARK: OperationStatusMessage convenience initializers and mutators
+
+public extension OperationStatusMessage {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(OperationStatusMessage.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        message: String?? = nil,
+        type: MessageType? = nil
+    ) -> OperationStatusMessage {
+        return OperationStatusMessage(
+            message: message ?? self.message,
+            type: type ?? self.type
         )
     }
 
@@ -2548,6 +2679,288 @@ public extension Translations {
     }
 }
 
+// MARK: - UserCanceled
+public struct UserCanceled: Codable {
+    public let message: String?
+    public let type: MessageType
+
+    public init(message: String?, type: MessageType) {
+        self.message = message
+        self.type = type
+    }
+}
+
+// MARK: UserCanceled convenience initializers and mutators
+
+public extension UserCanceled {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(UserCanceled.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        message: String?? = nil,
+        type: MessageType? = nil
+    ) -> UserCanceled {
+        return UserCanceled(
+            message: message ?? self.message,
+            type: type ?? self.type
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - WebauthnAuthorization
+public struct WebauthnAuthorization: Codable {
+    public let body: [String: JSONAny]?
+    public let deviceID, error: String?
+    public let type: MessageType
+
+    public enum CodingKeys: String, CodingKey {
+        case body
+        case deviceID = "deviceId"
+        case error, type
+    }
+
+    public init(body: [String: JSONAny]?, deviceID: String?, error: String?, type: MessageType) {
+        self.body = body
+        self.deviceID = deviceID
+        self.error = error
+        self.type = type
+    }
+}
+
+// MARK: WebauthnAuthorization convenience initializers and mutators
+
+public extension WebauthnAuthorization {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(WebauthnAuthorization.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        body: [String: JSONAny]?? = nil,
+        deviceID: String?? = nil,
+        error: String?? = nil,
+        type: MessageType? = nil
+    ) -> WebauthnAuthorization {
+        return WebauthnAuthorization(
+            body: body ?? self.body,
+            deviceID: deviceID ?? self.deviceID,
+            error: error ?? self.error,
+            type: type ?? self.type
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - WebauthnAuthorizationOptions
+public struct WebauthnAuthorizationOptions: Codable {
+    public let deviceID, error: String?
+    public let type: MessageType
+
+    public enum CodingKeys: String, CodingKey {
+        case deviceID = "deviceId"
+        case error, type
+    }
+
+    public init(deviceID: String?, error: String?, type: MessageType) {
+        self.deviceID = deviceID
+        self.error = error
+        self.type = type
+    }
+}
+
+// MARK: WebauthnAuthorizationOptions convenience initializers and mutators
+
+public extension WebauthnAuthorizationOptions {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(WebauthnAuthorizationOptions.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        deviceID: String?? = nil,
+        error: String?? = nil,
+        type: MessageType? = nil
+    ) -> WebauthnAuthorizationOptions {
+        return WebauthnAuthorizationOptions(
+            deviceID: deviceID ?? self.deviceID,
+            error: error ?? self.error,
+            type: type ?? self.type
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - WebauthnRegistration
+public struct WebauthnRegistration: Codable {
+    public let body: [String: JSONAny]?
+    public let deviceID, error: String?
+    public let type: MessageType
+
+    public enum CodingKeys: String, CodingKey {
+        case body
+        case deviceID = "deviceId"
+        case error, type
+    }
+
+    public init(body: [String: JSONAny]?, deviceID: String?, error: String?, type: MessageType) {
+        self.body = body
+        self.deviceID = deviceID
+        self.error = error
+        self.type = type
+    }
+}
+
+// MARK: WebauthnRegistration convenience initializers and mutators
+
+public extension WebauthnRegistration {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(WebauthnRegistration.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        body: [String: JSONAny]?? = nil,
+        deviceID: String?? = nil,
+        error: String?? = nil,
+        type: MessageType? = nil
+    ) -> WebauthnRegistration {
+        return WebauthnRegistration(
+            body: body ?? self.body,
+            deviceID: deviceID ?? self.deviceID,
+            error: error ?? self.error,
+            type: type ?? self.type
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - WebauthnRegistrationOptions
+public struct WebauthnRegistrationOptions: Codable {
+    public let deviceID, error: String?
+    public let type: MessageType
+
+    public enum CodingKeys: String, CodingKey {
+        case deviceID = "deviceId"
+        case error, type
+    }
+
+    public init(deviceID: String?, error: String?, type: MessageType) {
+        self.deviceID = deviceID
+        self.error = error
+        self.type = type
+    }
+}
+
+// MARK: WebauthnRegistrationOptions convenience initializers and mutators
+
+public extension WebauthnRegistrationOptions {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(WebauthnRegistrationOptions.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        deviceID: String?? = nil,
+        error: String?? = nil,
+        type: MessageType? = nil
+    ) -> WebauthnRegistrationOptions {
+        return WebauthnRegistrationOptions(
+            deviceID: deviceID ?? self.deviceID,
+            error: error ?? self.error,
+            type: type ?? self.type
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
 // MARK: - Helper functions for creating encoders and decoders
 
 func newJSONDecoder() -> JSONDecoder {
@@ -2564,4 +2977,246 @@ func newJSONEncoder() -> JSONEncoder {
         encoder.dateEncodingStrategy = .iso8601
     }
     return encoder
+}
+
+// MARK: - Encode/decode helpers
+
+public class JSONNull: Codable, Hashable {
+
+    public static func == (lhs: JSONNull, rhs: JSONNull) -> Bool {
+            return true
+    }
+
+    public var hashValue: Int {
+            return 0
+    }
+
+    public init() {}
+
+    public required init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if !container.decodeNil() {
+                    throw DecodingError.typeMismatch(JSONNull.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for JSONNull"))
+            }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encodeNil()
+    }
+}
+
+class JSONCodingKey: CodingKey {
+    let key: String
+
+    required init?(intValue: Int) {
+            return nil
+    }
+
+    required init?(stringValue: String) {
+            key = stringValue
+    }
+
+    var intValue: Int? {
+            return nil
+    }
+
+    var stringValue: String {
+            return key
+    }
+}
+
+public class JSONAny: Codable {
+
+    public let value: Any
+
+    static func decodingError(forCodingPath codingPath: [CodingKey]) -> DecodingError {
+            let context = DecodingError.Context(codingPath: codingPath, debugDescription: "Cannot decode JSONAny")
+            return DecodingError.typeMismatch(JSONAny.self, context)
+    }
+
+    static func encodingError(forValue value: Any, codingPath: [CodingKey]) -> EncodingError {
+            let context = EncodingError.Context(codingPath: codingPath, debugDescription: "Cannot encode JSONAny")
+            return EncodingError.invalidValue(value, context)
+    }
+
+    static func decode(from container: SingleValueDecodingContainer) throws -> Any {
+            if let value = try? container.decode(Bool.self) {
+                    return value
+            }
+            if let value = try? container.decode(Int64.self) {
+                    return value
+            }
+            if let value = try? container.decode(Double.self) {
+                    return value
+            }
+            if let value = try? container.decode(String.self) {
+                    return value
+            }
+            if container.decodeNil() {
+                    return JSONNull()
+            }
+            throw decodingError(forCodingPath: container.codingPath)
+    }
+
+    static func decode(from container: inout UnkeyedDecodingContainer) throws -> Any {
+            if let value = try? container.decode(Bool.self) {
+                    return value
+            }
+            if let value = try? container.decode(Int64.self) {
+                    return value
+            }
+            if let value = try? container.decode(Double.self) {
+                    return value
+            }
+            if let value = try? container.decode(String.self) {
+                    return value
+            }
+            if let value = try? container.decodeNil() {
+                    if value {
+                            return JSONNull()
+                    }
+            }
+            if var container = try? container.nestedUnkeyedContainer() {
+                    return try decodeArray(from: &container)
+            }
+            if var container = try? container.nestedContainer(keyedBy: JSONCodingKey.self) {
+                    return try decodeDictionary(from: &container)
+            }
+            throw decodingError(forCodingPath: container.codingPath)
+    }
+
+    static func decode(from container: inout KeyedDecodingContainer<JSONCodingKey>, forKey key: JSONCodingKey) throws -> Any {
+            if let value = try? container.decode(Bool.self, forKey: key) {
+                    return value
+            }
+            if let value = try? container.decode(Int64.self, forKey: key) {
+                    return value
+            }
+            if let value = try? container.decode(Double.self, forKey: key) {
+                    return value
+            }
+            if let value = try? container.decode(String.self, forKey: key) {
+                    return value
+            }
+            if let value = try? container.decodeNil(forKey: key) {
+                    if value {
+                            return JSONNull()
+                    }
+            }
+            if var container = try? container.nestedUnkeyedContainer(forKey: key) {
+                    return try decodeArray(from: &container)
+            }
+            if var container = try? container.nestedContainer(keyedBy: JSONCodingKey.self, forKey: key) {
+                    return try decodeDictionary(from: &container)
+            }
+            throw decodingError(forCodingPath: container.codingPath)
+    }
+
+    static func decodeArray(from container: inout UnkeyedDecodingContainer) throws -> [Any] {
+            var arr: [Any] = []
+            while !container.isAtEnd {
+                    let value = try decode(from: &container)
+                    arr.append(value)
+            }
+            return arr
+    }
+
+    static func decodeDictionary(from container: inout KeyedDecodingContainer<JSONCodingKey>) throws -> [String: Any] {
+            var dict = [String: Any]()
+            for key in container.allKeys {
+                    let value = try decode(from: &container, forKey: key)
+                    dict[key.stringValue] = value
+            }
+            return dict
+    }
+
+    static func encode(to container: inout UnkeyedEncodingContainer, array: [Any]) throws {
+            for value in array {
+                    if let value = value as? Bool {
+                            try container.encode(value)
+                    } else if let value = value as? Int64 {
+                            try container.encode(value)
+                    } else if let value = value as? Double {
+                            try container.encode(value)
+                    } else if let value = value as? String {
+                            try container.encode(value)
+                    } else if value is JSONNull {
+                            try container.encodeNil()
+                    } else if let value = value as? [Any] {
+                            var container = container.nestedUnkeyedContainer()
+                            try encode(to: &container, array: value)
+                    } else if let value = value as? [String: Any] {
+                            var container = container.nestedContainer(keyedBy: JSONCodingKey.self)
+                            try encode(to: &container, dictionary: value)
+                    } else {
+                            throw encodingError(forValue: value, codingPath: container.codingPath)
+                    }
+            }
+    }
+
+    static func encode(to container: inout KeyedEncodingContainer<JSONCodingKey>, dictionary: [String: Any]) throws {
+            for (key, value) in dictionary {
+                    let key = JSONCodingKey(stringValue: key)!
+                    if let value = value as? Bool {
+                            try container.encode(value, forKey: key)
+                    } else if let value = value as? Int64 {
+                            try container.encode(value, forKey: key)
+                    } else if let value = value as? Double {
+                            try container.encode(value, forKey: key)
+                    } else if let value = value as? String {
+                            try container.encode(value, forKey: key)
+                    } else if value is JSONNull {
+                            try container.encodeNil(forKey: key)
+                    } else if let value = value as? [Any] {
+                            var container = container.nestedUnkeyedContainer(forKey: key)
+                            try encode(to: &container, array: value)
+                    } else if let value = value as? [String: Any] {
+                            var container = container.nestedContainer(keyedBy: JSONCodingKey.self, forKey: key)
+                            try encode(to: &container, dictionary: value)
+                    } else {
+                            throw encodingError(forValue: value, codingPath: container.codingPath)
+                    }
+            }
+    }
+
+    static func encode(to container: inout SingleValueEncodingContainer, value: Any) throws {
+            if let value = value as? Bool {
+                    try container.encode(value)
+            } else if let value = value as? Int64 {
+                    try container.encode(value)
+            } else if let value = value as? Double {
+                    try container.encode(value)
+            } else if let value = value as? String {
+                    try container.encode(value)
+            } else if value is JSONNull {
+                    try container.encodeNil()
+            } else {
+                    throw encodingError(forValue: value, codingPath: container.codingPath)
+            }
+    }
+
+    public required init(from decoder: Decoder) throws {
+            if var arrayContainer = try? decoder.unkeyedContainer() {
+                    self.value = try JSONAny.decodeArray(from: &arrayContainer)
+            } else if var container = try? decoder.container(keyedBy: JSONCodingKey.self) {
+                    self.value = try JSONAny.decodeDictionary(from: &container)
+            } else {
+                    let container = try decoder.singleValueContainer()
+                    self.value = try JSONAny.decode(from: container)
+            }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+            if let arr = self.value as? [Any] {
+                    var container = encoder.unkeyedContainer()
+                    try JSONAny.encode(to: &container, array: arr)
+            } else if let dict = self.value as? [String: Any] {
+                    var container = encoder.container(keyedBy: JSONCodingKey.self)
+                    try JSONAny.encode(to: &container, dictionary: dict)
+            } else {
+                    var container = encoder.singleValueContainer()
+                    try JSONAny.encode(to: &container, value: self.value)
+            }
+    }
 }
