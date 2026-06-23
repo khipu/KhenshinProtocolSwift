@@ -1565,6 +1565,7 @@ public enum FailureReasonType: String, Codable {
     case taskFinished = "TASK_FINISHED"
     case taskNotificationError = "TASK_NOTIFICATION_ERROR"
     case userCanceled = "USER_CANCELED"
+    case userDisconnected = "USER_DISCONNECTED"
 }
 
 // MARK: - OperationFinish
