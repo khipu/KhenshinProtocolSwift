@@ -20,6 +20,20 @@ it, simply add the following line to your Podfile:
 pod 'KhenshinProtocol'
 ```
 
+## Installation (Swift Package Manager)
+
+Add the package to your `Package.swift` dependencies:
+
+    .package(url: "https://github.com/khipu/KhenshinProtocolSwift.git", from: "1.0.60")
+
+Then add `KhenshinProtocol` to your target's dependencies. In Xcode:
+**File → Add Packages…** and use the same URL.
+
+> **Nota de mantenimiento:** el `Package.swift` es estático y vive en este repo.
+> El pipeline de `khenshin-websocket-schema` solo regenera
+> `KhenshinProtocol/Classes/KhenshinProtocol.swift` y la versión del `.podspec`,
+> por lo que el manifiesto SPM sobrevive a cada regeneración sin intervención.
+
 ## Author
 
 Emilio Davis, emilio.davis@khipu.com
