@@ -3,6 +3,7 @@
 //
 //   let authorizationRequest = try AuthorizationRequest(json)
 //   let cancelOperationComplete = try CancelOperationComplete(json)
+//   let externalAuthorizationClosed = try ExternalAuthorizationClosed(json)
 //   let formItemTypes = try? JSONDecoder().decode(FormItemTypes.self, from: jsonData)
 //   let formRequest = try FormRequest(json)
 //   let formResponse = try FormResponse(json)
@@ -92,6 +93,7 @@ public extension AuthorizationRequest {
 
 public enum AuthorizationRequestType: String, Codable {
     case custom = "CUSTOM"
+    case iframe = "IFRAME"
     case mobile = "MOBILE"
     case none = "NONE"
     case qr = "QR"
@@ -100,6 +102,7 @@ public enum AuthorizationRequestType: String, Codable {
 public enum MessageType: String, Codable {
     case authorizationRequest = "AUTHORIZATION_REQUEST"
     case cancelOperationComplete = "CANCEL_OPERATION_COMPLETE"
+    case externalAuthorizationClosed = "EXTERNAL_AUTHORIZATION_CLOSED"
     case formRequest = "FORM_REQUEST"
     case formResponse = "FORM_RESPONSE"
     case geolocationRequest = "GEOLOCATION_REQUEST"
@@ -160,6 +163,50 @@ public extension CancelOperationComplete {
         type: MessageType? = nil
     ) -> CancelOperationComplete {
         return CancelOperationComplete(
+            type: type ?? self.type
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - ExternalAuthorizationClosed
+public struct ExternalAuthorizationClosed: Codable {
+    public let type: MessageType
+
+    public init(type: MessageType) {
+        self.type = type
+    }
+}
+
+// MARK: ExternalAuthorizationClosed convenience initializers and mutators
+
+public extension ExternalAuthorizationClosed {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(ExternalAuthorizationClosed.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        type: MessageType? = nil
+    ) -> ExternalAuthorizationClosed {
+        return ExternalAuthorizationClosed(
             type: type ?? self.type
         )
     }
