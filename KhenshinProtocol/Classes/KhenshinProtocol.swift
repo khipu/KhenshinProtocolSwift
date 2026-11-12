@@ -21,6 +21,7 @@
 //   let operationStatusMessage = try OperationStatusMessage(json)
 //   let operationSuccess = try OperationSuccess(json)
 //   let operationWarning = try OperationWarning(json)
+//   let paymentMethodChange = try PaymentMethodChange(json)
 //   let preAuthorizationCanceled = try PreAuthorizationCanceled(json)
 //   let preAuthorizationStarted = try PreAuthorizationStarted(json)
 //   let progressInfo = try ProgressInfo(json)
@@ -117,6 +118,7 @@ public enum MessageType: String, Codable {
     case operationStatusMessage = "OPERATION_STATUS_MESSAGE"
     case operationSuccess = "OPERATION_SUCCESS"
     case operationWarning = "OPERATION_WARNING"
+    case paymentMethodChange = "PAYMENT_METHOD_CHANGE"
     case preAuthorizationCanceled = "PRE_AUTHORIZATION_CANCELED"
     case preAuthorizationStarted = "PRE_AUTHORIZATION_STARTED"
     case progressInfo = "PROGRESS_INFO"
@@ -2422,6 +2424,50 @@ public extension OperationWarning {
             resultMessage: resultMessage ?? self.resultMessage,
             title: title ?? self.title,
             reason: reason ?? self.reason
+        )
+    }
+
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+// MARK: - PaymentMethodChange
+public struct PaymentMethodChange: Codable {
+    public let type: MessageType
+
+    public init(type: MessageType) {
+        self.type = type
+    }
+}
+
+// MARK: PaymentMethodChange convenience initializers and mutators
+
+public extension PaymentMethodChange {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(PaymentMethodChange.self, from: data)
+    }
+
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+
+    func with(
+        type: MessageType? = nil
+    ) -> PaymentMethodChange {
+        return PaymentMethodChange(
+            type: type ?? self.type
         )
     }
 
