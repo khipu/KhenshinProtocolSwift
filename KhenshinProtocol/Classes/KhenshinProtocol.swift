@@ -39,12 +39,16 @@ import Foundation
 // MARK: - AuthorizationRequest
 public struct AuthorizationRequest: Codable {
     public let authorizationType: AuthorizationRequestType
+    /// Whether the payer may leave this Pay Link for another payment method
+    /// (PAYMENT_METHOD_CHANGE); absent means yes.
+    public let canChangePaymentMethod: Bool?
     public let imageData: String?
     public let message: String
     public let type: MessageType
 
-    public init(authorizationType: AuthorizationRequestType, imageData: String?, message: String, type: MessageType) {
+    public init(authorizationType: AuthorizationRequestType, canChangePaymentMethod: Bool?, imageData: String?, message: String, type: MessageType) {
         self.authorizationType = authorizationType
+        self.canChangePaymentMethod = canChangePaymentMethod
         self.imageData = imageData
         self.message = message
         self.type = type
@@ -71,12 +75,14 @@ public extension AuthorizationRequest {
 
     func with(
         authorizationType: AuthorizationRequestType? = nil,
+        canChangePaymentMethod: Bool?? = nil,
         imageData: String?? = nil,
         message: String? = nil,
         type: MessageType? = nil
     ) -> AuthorizationRequest {
         return AuthorizationRequest(
             authorizationType: authorizationType ?? self.authorizationType,
+            canChangePaymentMethod: canChangePaymentMethod ?? self.canChangePaymentMethod,
             imageData: imageData ?? self.imageData,
             message: message ?? self.message,
             type: type ?? self.type
